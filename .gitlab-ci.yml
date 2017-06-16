@@ -1,0 +1,34 @@
+# Copyright (C) 2017 CZ.NIC, z.s.p.o. <https://www.nic.cz>
+
+image: debian:8
+
+before_script:
+  - apt-get --quiet update
+  - apt-get --quiet upgrade
+  - make prepare-dev
+
+stages:
+  - test
+  - build
+
+
+test:
+  stage: test
+  script:
+    - make test
+
+lint:
+  stage: test
+  script:
+    - make lint
+
+
+build:
+  stage: build
+  script:
+    - make build
+  artifacts:
+    paths:
+    - *.deb
+    - *.rpm
+    - *.tar
