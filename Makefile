@@ -15,7 +15,7 @@ all:
 
 
 prepare-dev:
-	apt-get install python python-pip pyhton3 python3-pip sshpass
+	apt-get install python python-pip python3 python3-pip sshpass
 	pip2 install twisted>=16.0
 	pip3 install twisted>=16.6
 
