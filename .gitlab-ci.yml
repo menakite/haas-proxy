@@ -29,6 +29,6 @@ build:
     - make build
   artifacts:
     paths:
-    - *.deb
-    - *.rpm
-    - *.tar
+    - ./*.deb
+    - ./*.rpm
+    - ./*.tar
