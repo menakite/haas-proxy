@@ -4,7 +4,7 @@ image: debian:8
 
 before_script:
   - apt-get --quiet update
-  - apt-get --quiet upgrade
+  - apt-get install make
   - make prepare-dev
 
 stages:
