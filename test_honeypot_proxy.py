@@ -14,7 +14,7 @@ from honeypot_proxy import force_text, ProxySSHSession
 @pytest.fixture
 def cmd_args():
     return mock.Mock(
-        user_id=42,
+        device_token=42,
         honeypot_host='localhost',
         honeypot_port=2222,
     )
@@ -56,8 +56,8 @@ def test_honeypot_ssh_arguments(proxy_ssh_session):
 
 def test_mangle_password(proxy_ssh_session):
     assert json.loads(proxy_ssh_session.mangled_password) == {
-        'password': 'pass',
-        'user_id': 42,
+        'pass': 'pass',
+        'device_token': 42,
         'remote': 'hacker',
         'remote_port': 12345,
     }
