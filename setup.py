@@ -23,7 +23,7 @@ setup(
     name='haas-proxy',
     version='1.0',
     packages=[],
-    scripts=['honeypot_proxy.py'],
+    scripts=['haas_proxy.py'],
 
     install_requires=[
         'twisted[conch]>={}'.format(TWISTED_VERSION),

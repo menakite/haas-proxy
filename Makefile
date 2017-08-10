@@ -27,16 +27,16 @@ prepare-dev:
 	gem install --no-ri --no-rdoc fpm
 
 test:
-	if [ `which python2` ]; then python2 -m pytest test_honeypot_proxy.py; fi
-	if [ `which python3` ]; then python3 -m pytest test_honeypot_proxy.py; fi
+	if [ `which python2` ]; then python2 -m pytest test_haas_proxy.py; fi
+	if [ `which python3` ]; then python3 -m pytest test_haas_proxy.py; fi
 
 lint:
-	python3 -m pylint --rcfile=pylintrc honeypot_proxy.py
+	python3 -m pylint --rcfile=pylintrc haas_proxy.py
 
 run-py2:
-	sudo python2 honeypot_proxy.py --device-token 42
+	sudo python2 haas_proxy.py --device-token 42
 run-py3:
-	sudo python3 honeypot_proxy.py --device-token 42
+	sudo python3 haas_proxy.py --device-token 42
 
 build:
 	# Debian packages

@@ -19,7 +19,7 @@ Store it in some path and then pass it as:
 
 Example usage:
 
-    $ honeypot_proxy.py --device-token XXX
+    $ haas_proxy.py --device-token XXX
 """
 
 import argparse
