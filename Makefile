@@ -16,8 +16,8 @@ all:
 
 prepare-dev:
 	apt-get install -y python python-pip python3 python3-pip sshpass
-	python2 -m pip install twisted>=16.0
-	python3 -m pip install twisted>=16.6
+	python2 -m pip install "twisted>=16.0"
+	python3 -m pip install "twisted>=16.6"
 
 	# Test dependencies
 	python2 -m pip install pylint pytest mock
@@ -28,16 +28,16 @@ prepare-dev:
 	gem install --no-ri --no-rdoc fpm
 
 test:
-	which python2 && python2 -m pytest test_honeypot_proxy.py || true
-	which python3 && python3 -m pytest test_honeypot_proxy.py || true
+	if [ `which python2` ]; then python2 -m pytest test_honeypot_proxy.py; fi
+	if [ `which python3` ]; then python3 -m pytest test_honeypot_proxy.py; fi
 
 lint:
 	python3 -m pylint --rcfile=pylintrc honeypot_proxy.py
 
 run-py2:
-	sudo python2 honeypot_proxy.py --user-id 42
+	sudo python2 honeypot_proxy.py --device-token 42
 run-py3:
-	sudo python3 honeypot_proxy.py --user-id 42
+	sudo python3 honeypot_proxy.py --device-token 42
 
 build:
 	# Debian packages

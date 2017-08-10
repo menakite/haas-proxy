@@ -6,16 +6,20 @@ tag SSH activity with your account ID so you can watch your log online.
 
 Script has hardcoded address of honeypot running at CZ.NIC. It shouldn't
 be changed but if does or you need to use proxy or send it to own honeypot,
-use optional arguments honeypot-host and honeypot-port.
+use optional arguments `--honeypot-host` and `--honeypot-port`.
 
 Script contains one pre-generated key. If you want to use own, create one
-with following command:
+with the following command:
 
     $ ssh-keygen -t rsa -b 4096
 
 Store it in some path and then pass it as:
 
     --public-key "$(< /path/id_rsa.pub)" --private-key "$(< /path/id_rsa)"
+
+Example usage:
+
+    $ honeypot_proxy.py --device-token XXX
 """
 
 import argparse
@@ -36,9 +40,9 @@ from twisted.python import log
 from twisted.python import components
 
 
-DEFAULT_PORT = 5022
-DEFAULT_HONEYPOT_HOST = 'localhost'
-DEFAULT_HONEYPOT_PORT = 2222
+DEFAULT_PORT = 2222
+DEFAULT_HONEYPOT_HOST = 'haas-app.nic.cz'
+DEFAULT_HONEYPOT_PORT = 10000
 
 # pylint: disable=line-too-long
 DEFAULT_PUBLIC_KEY = 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAAAgQC2jdAE4EAAKikW6W/dDmWS/0lQ1jWM6c6Ef+KpGr+jW83/XIR2reWXeeDTIEluL20JV/P2+2bvVShNr4w8SWitcYKTpwkSgGYHo2vAQvXArx/CsRnTAP6NwrxuZoLNO52fMXQWSrqs0tEvkzYXR3PcR6Cq07RN7QkYNWctCYJxdw=='
@@ -65,8 +69,8 @@ def main():
     """
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawTextHelpFormatter)
     parser.add_argument(
-        '-u', '--user-id',
-        dest='user_id',
+        '-d', '--device-token',
+        dest='device_token',
         required=True,
         help='Your ID at honeypot.labs.nic.cz. If you don\'t have one, sign up first.',
     )
@@ -214,8 +218,8 @@ class ProxySSHSession(SSHSessionForUnixConchUser):
         """
         peer = self.avatar.conn.transport.transport.getPeer()
         password_data = {
-            'password': force_text(self.avatar.password),
-            'user_id': self.cmd_args.user_id,
+            'pass': force_text(self.avatar.password),
+            'device_token': self.cmd_args.device_token,
             'remote': peer.host,
             'remote_port': peer.port,
         }

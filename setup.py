@@ -17,7 +17,9 @@ setup(
     packages=[],
     scripts=['honeypot_proxy.py'],
 
-    install_requires=['twisted>={}'.format(TWISTED_VERSION)],
+    install_requires=[
+        'twisted>={}'.format(TWISTED_VERSION),
+    ],
 
     url='https://haas.nic.cz',
     author='CZ.NIC Labs',
