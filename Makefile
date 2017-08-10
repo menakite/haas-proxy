@@ -16,12 +16,8 @@ all:
 
 prepare-dev:
 	apt-get install -y python python-dev python-pip python3 python3-dev python3-pip sshpass
-	python2 -m pip install "twisted>=16.0"
-	python3 -m pip install "twisted>=16.6"
-
-	# Test dependencies
-	python2 -m pip install pylint pytest mock
-	python3 -m pip install pylint pytest
+	python2 -m pip install -e .[test]
+	python3 -m pip install -e .[test]
 
     # Build dependencies
 	apt-get install -y ruby ruby-dev rubygems build-essential rpm

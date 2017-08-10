@@ -11,6 +11,14 @@ except ImportError:
 # has some bugs which are solved in 16.6.
 TWISTED_VERSION = '16.0' if sys.version_info < (3, 0) else '16.6'
 
+EXTRA_TEST_REQUIRE = [
+    'pylint',
+    'pytest',
+]
+if sys.version_info < (3, 0):
+    EXTRA_TEST_REQUIRE += ['mock']
+
+
 setup(
     name='haas-proxy',
     version='1.0',
@@ -18,8 +26,11 @@ setup(
     scripts=['honeypot_proxy.py'],
 
     install_requires=[
-        'twisted>={}'.format(TWISTED_VERSION),
+        'twisted[conch]>={}'.format(TWISTED_VERSION),
     ],
+    extras_require={
+        'test': EXTRA_TEST_REQUIRE,
+    },
 
     url='https://haas.nic.cz',
     author='CZ.NIC Labs',
