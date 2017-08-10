@@ -15,8 +15,10 @@ all:
 
 
 prepare-dev:
-	@# libffi-dev for building cryptography, dependency of twisted.
+	@# libffi-dev and cffi for building cryptography, dependency of twisted.
 	apt-get install -y python python-dev python-pip python3 python3-dev python3-pip sshpass libffi-dev
+	python2 -m pip install -U cffi
+	python3 -m pip install -U cffi
 	python2 -m pip install -e .[test]
 	python3 -m pip install -e .[test]
 
