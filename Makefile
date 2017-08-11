@@ -1,6 +1,10 @@
 
 .PHONY: all prepare-dev test lint run-py2 run-py3 build clean
 
+# Normally it would be just twistd but it runs always with Python 2 in this moment.
+TWISTD_CMD=-c "from twisted.scripts.twistd import run; run()"
+TWISTD_RUN_ARGS=-l haas.log --pidfile haas.pid haas_proxy -p 2220 -d 42
+
 FPM_CMD=fpm -f -d sshpass -m 'haas@nic.cz' -s python
 FPM_CMD_PY2=${FPM_CMD} --python-bin /usr/bin/python2 --python-package-name-prefix python
 FPM_CMD_PY3=${FPM_CMD} --python-bin /usr/bin/python3 --python-package-name-prefix python3
@@ -31,12 +35,12 @@ test:
 	if [ `which python3` ]; then python3 -m pytest test_haas_proxy.py; fi
 
 lint:
-	python3 -m pylint --rcfile=pylintrc haas_proxy.py
+	python3 -m pylint --rcfile=pylintrc haas_proxy twisted/plugins/haas_proxy_plugin.py
 
 run-py2:
-	sudo python2 haas_proxy.py --device-token 42
+	sudo python2 ${TWISTD_CMD} ${TWISTD_RUN_ARGS}
 run-py3:
-	sudo python3 haas_proxy.py --device-token 42
+	sudo python3 ${TWISTD_CMD} ${TWISTD_RUN_ARGS}
 
 build:
 	# Debian packages

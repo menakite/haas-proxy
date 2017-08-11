@@ -1,7 +1,7 @@
 __pycache__
 *.pyc
 *.pyo
-.cache
+*.cache
 
 .eggs
 haas_proxy.egg-info
@@ -10,3 +10,6 @@ dist
 *.deb
 *.rpm
 *.tar
+
+haas.log
+haas.pid

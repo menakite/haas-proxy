@@ -22,8 +22,10 @@ if sys.version_info < (3, 0):
 setup(
     name='haas-proxy',
     version='1.0',
-    packages=[],
-    scripts=['haas_proxy.py'],
+    packages=[
+        'haas_proxy',
+        'twisted.plugins',
+    ],
 
     install_requires=[
         'twisted[conch]>={}'.format(TWISTED_VERSION),

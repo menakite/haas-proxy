@@ -8,7 +8,8 @@ except ImportError:
 
 import pytest
 
-from haas_proxy import force_text, ProxySSHSession
+from haas_proxy.proxy import ProxySSHSession
+from haas_proxy.utils import force_text
 
 
 @pytest.fixture
