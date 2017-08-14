@@ -52,7 +52,13 @@ def test_force_text(value, expected):
 
 
 def test_honeypot_ssh_arguments(proxy_ssh_session):
-    assert proxy_ssh_session.honeypot_ssh_arguments[3:] == ['ssh', '-p', '2222', 'user@localhost']
+    assert proxy_ssh_session.honeypot_ssh_arguments[3:] == [
+        'ssh',
+        '-o', 'UserKnownHostsFile=/dev/null',
+        '-o', 'StrictHostKeyChecking=no',
+        '-p', '2222',
+        'user@localhost',
+    ]
 
 
 def test_mangle_password(proxy_ssh_session):

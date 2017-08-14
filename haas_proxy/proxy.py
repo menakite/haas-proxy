@@ -139,6 +139,8 @@ class ProxySSHSession(SSHSessionForUnixConchUser):
             'sshpass',
             '-p', self.mangled_password,
             'ssh',
+            '-o', 'UserKnownHostsFile=/dev/null',
+            '-o', 'StrictHostKeyChecking=no',
             '-p', str(self.cmd_args.honeypot_port),
             '{}@{}'.format(force_text(self.avatar.username), self.cmd_args.honeypot_host),
         ]

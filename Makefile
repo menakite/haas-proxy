@@ -3,7 +3,7 @@
 
 # Normally it would be just twistd but it runs always with Python 2 in this moment.
 TWISTD_CMD=-c "from twisted.scripts.twistd import run; run()"
-TWISTD_RUN_ARGS=-l haas.log --pidfile haas.pid haas_proxy -p 2220 -d 42
+TWISTD_RUN_ARGS=-l haas.log --pidfile haas.pid haas_proxy -d 42
 
 FPM_CMD=fpm -f -d sshpass -m 'haas@nic.cz' -s python
 FPM_CMD_PY2=${FPM_CMD} --python-bin /usr/bin/python2 --python-package-name-prefix python
@@ -37,10 +37,12 @@ test:
 lint:
 	python3 -m pylint --rcfile=pylintrc haas_proxy twisted/plugins/haas_proxy_plugin.py
 
-run-py2:
+run-py2: run-kill
 	sudo python2 ${TWISTD_CMD} ${TWISTD_RUN_ARGS}
-run-py3:
+run-py3: run-kill
 	sudo python3 ${TWISTD_CMD} ${TWISTD_RUN_ARGS}
+run-kill:
+	kill `cat haas.pid` >/dev/null || true
 
 build:
 	# Debian packages
