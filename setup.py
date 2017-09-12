@@ -24,7 +24,7 @@ setup(
     version='1.0',
     packages=[
         'haas_proxy',
-        'twisted.plugins',
+        'haas_proxy.twisted.plugins',
     ],
 
     install_requires=[
