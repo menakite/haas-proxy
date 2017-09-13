@@ -1,5 +1,6 @@
 
-.PHONY: all prepare-dev test lint run-py2 run-py3 build clean
+.PHONY: all prepare-dev test lint run-py2 run-py3 release build clean
+SHELL=/bin/bash
 
 # Normally it would be just twistd but it runs always with Python 2 in this moment.
 TWISTD_CMD=-m haas_proxy
@@ -42,6 +43,12 @@ run-py2:
 run-py3:
 	sudo python3 ${TWISTD_CMD} ${TWISTD_RUN_ARGS}
 
+release: build
+	rm -rf release
+	mkdir release
+	mv *deb *rpm *tar.gz release
+	cd release; for f in `ls`; do md5sum "$${f}" > "$${f}.checksum"; done
+
 build:
 	# Debian packages
 	${FPM_CMD_PY2} -t deb setup.py
@@ -52,7 +59,7 @@ build:
 	${FPM_CMD_PY3} -t rpm setup.py
 
     # Just archive, no deps
-	${FPM_CMD} -t tar setup.py
+	python setup.py sdist --formats=gztar --dist-dir .
 
 clean:
 	python setup.py clean

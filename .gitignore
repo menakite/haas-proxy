@@ -9,7 +9,7 @@ build
 dist
 *.deb
 *.rpm
-*.tar
+*.tar*
 
 haas.log
 haas.pid
