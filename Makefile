@@ -8,7 +8,7 @@ TWISTD_RUN_ARGS=-l haas.log -n haas_proxy -d ${DEVICE_TOKEN}
 
 FPM_CMD=fpm -f -d sshpass -m 'haas@nic.cz' -s python
 FPM_CMD_PY2=${FPM_CMD} --python-bin /usr/bin/python2 --python-package-name-prefix python
-FPM_CMD_PY3=${FPM_CMD} --python-bin /usr/bin/python3 --python-package-name-prefix python3
+FPM_CMD_PY3=${FPM_CMD} --python-bin /usr/bin/python3 --python-package-name-prefix python3 --python-install-lib /usr/lib/python3/dist-packages
 
 all:
 	@echo "make prepare-dev"
