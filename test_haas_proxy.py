@@ -56,6 +56,7 @@ def test_honeypot_ssh_arguments(proxy_ssh_session):
         'ssh',
         '-o', 'UserKnownHostsFile=/dev/null',
         '-o', 'StrictHostKeyChecking=no',
+        '-o', 'LogLevel=error',
         '-p', '2222',
         'user@localhost',
     ]

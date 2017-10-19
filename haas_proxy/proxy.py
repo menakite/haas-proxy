@@ -141,6 +141,7 @@ class ProxySSHSession(SSHSessionForUnixConchUser):
             'ssh',
             '-o', 'UserKnownHostsFile=/dev/null',
             '-o', 'StrictHostKeyChecking=no',
+            '-o', 'LogLevel=error',  # Ignore warning of permanently added host to list of known hosts.
             '-p', str(self.cmd_args.honeypot_port),
             '{}@{}'.format(force_text(self.avatar.username), self.cmd_args.honeypot_host),
         ]
