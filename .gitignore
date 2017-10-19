@@ -10,6 +10,7 @@ dist
 *.deb
 *.rpm
 *.tar*
+!release/*
 
 haas.log
 haas.pid
