@@ -17,6 +17,7 @@ Store it in some path and then pass it as arguments:
 
 Example usage:
 
+    $ sudo python -m haas_proxy [TWISTED OPTIONS] haas_proxy [HAAS OPTIONS]
     $ sudo python -m haas_proxy -l /tmp/haas.log --pidfile /tmp/haas.pid haas_proxy --device-token XXX
 
 Note that there is not used script `twistd` but `python -m haas_proxy`. It's
