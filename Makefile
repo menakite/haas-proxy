@@ -49,6 +49,9 @@ release: build
 	mv *deb *rpm *tar.gz release
 	cd release; for f in `ls`; do md5sum "$${f}" > "$${f}.checksum"; done
 
+upload:
+	python3 setup.py register sdist upload
+
 build:
 	# Debian packages
 	${FPM_CMD_PY2} -t deb setup.py
