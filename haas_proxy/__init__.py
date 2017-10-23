@@ -17,13 +17,12 @@ Store it in some path and then pass it as arguments:
 
 Example usage:
 
-    $ sudo python -m haas_proxy [TWISTED OPTIONS] haas_proxy [HAAS OPTIONS]
-    $ sudo python -m haas_proxy -l /tmp/haas.log --pidfile /tmp/haas.pid haas_proxy --device-token XXX
+    $ python -m haas_proxy [TWISTED OPTIONS] haas_proxy [HAAS OPTIONS]
+    $ python -m haas_proxy -l /tmp/haas.log --pidfile /tmp/haas.pid haas_proxy --device-token XXX
 
 Note that there is not used script `twistd` but `python -m haas_proxy`. It's
 because you would need to pass PYTHONPATH by hand which is not comfortable.
-The rest of arguments works the same way. Also note that running of proxy
-needs root privileges.
+The rest of arguments works the same way.
 """
 
 from haas_proxy import constants

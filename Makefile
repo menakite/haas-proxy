@@ -39,9 +39,9 @@ lint:
 	python3 -m pylint --rcfile=pylintrc haas_proxy haas_proxy/twisted/plugins/haas_proxy_plugin.py
 
 run-py2:
-	sudo python2 ${TWISTD_CMD} ${TWISTD_RUN_ARGS}
+	python2 ${TWISTD_CMD} ${TWISTD_RUN_ARGS}
 run-py3:
-	sudo python3 ${TWISTD_CMD} ${TWISTD_RUN_ARGS}
+	python3 ${TWISTD_CMD} ${TWISTD_RUN_ARGS}
 
 release: build
 	rm -rf release

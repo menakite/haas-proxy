@@ -4,8 +4,6 @@ Implementation of SSH proxy using Twisted.
 
 import fcntl
 import json
-import os
-import pwd
 import struct
 import tty
 
@@ -114,7 +112,6 @@ class ProxySSHSession(SSHSessionForUnixConchUser):
         """
         Custom implementation of shell - proxy to real SSH to honeypot.
         """
-        user = pwd.getpwuid(os.getuid())
         # pylint: disable=no-member
         self.pty = reactor.spawnProcess(
             proto,
@@ -122,8 +119,8 @@ class ProxySSHSession(SSHSessionForUnixConchUser):
             args=self.honeypot_ssh_arguments,
             env=self.environ,
             path='/',
-            uid=user.pw_uid,
-            gid=user.pw_gid,
+            uid=None,
+            gid=None,
             usePTY=self.ptyTuple,
         )
         fcntl.ioctl(self.pty.fileno(), tty.TIOCSWINSZ, struct.pack('4H', *self.winSize))
