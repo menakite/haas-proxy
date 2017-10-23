@@ -1,0 +1,15 @@
+# Changelog
+
+## [1.2] - 2017-10-24
+### Changed
+- Better help
+- No root needed
+
+## [1.1] - 2017-10-19
+### Added
+- License file
+
+### Changed
+- Ignored warning of permanently added host
+
+## [1.0] - 2017-09-13
