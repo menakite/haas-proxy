@@ -11,9 +11,9 @@ with the following command:
 
     $ ssh-keygen -t rsa -b 4096
 
-Store it in some path and then pass it as arguments:
+Store it in some path and then pass file names as arguments:
 
-    --public-key "$(< /path/id_rsa.pub)" --private-key "$(< /path/id_rsa)"
+    --public-key /path/id_rsa.pub --private-key /path/id_rsa
 
 Example usage:
 

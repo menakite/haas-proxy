@@ -11,6 +11,15 @@ from zope.interface import implementer
 from haas_proxy import ProxyService, constants, __doc__ as haas_proxy_doc
 
 
+def read_key(filename, default):
+    if not filename:
+        return default
+    try:
+        return open(filename).read()
+    except Exception as exc:
+        raise usage.UsageError('Problem to read the key {}: {}'.format(filename, exc))
+
+
 class Options(usage.Options):
     optParameters = [
         ['device-token', 'd', None, 'Your ID at honeypot.labs.nic.cz. If you don\'t have one, sign up first.'],
@@ -48,10 +57,8 @@ class Options(usage.Options):
     def postOptions(self):
         if not self['device-token']:
             raise usage.UsageError('Device token is required')
-        if not self['public-key']:
-            self['public-key'] = constants.DEFAULT_PUBLIC_KEY
-        if not self['private-key']:
-            self['private-key'] = constants.DEFAULT_PRIVATE_KEY
+        self['public-key'] = read_key(self['public-key'], constants.DEFAULT_PUBLIC_KEY)
+        self['private-key'] = read_key(self['private-key'], constants.DEFAULT_PRIVATE_KEY)
 
     def getSynopsis(self):
         return super(Options, self).getSynopsis() + '\n' + haas_proxy_doc
