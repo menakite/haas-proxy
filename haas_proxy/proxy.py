@@ -102,6 +102,10 @@ class ProxySSHUser(ConchUser):
 
     # pylint: disable=invalid-name
     def getUserGroupID(self):
+        """
+        Returns tuple with user and group ID.
+        Method needed by `SSHSessionForUnixConchUser`.
+        """
         return None, None
 
 
