@@ -9,6 +9,7 @@ from twisted.application.service import IServiceMaker
 from zope.interface import implementer
 
 from haas_proxy import ProxyService, constants, __doc__ as haas_proxy_doc
+from haas_proxy.log import init_python_logging
 
 
 def read_key(filename, default):
@@ -28,6 +29,8 @@ class Options(usage.Options):
         ['honeypot-port', None, constants.DEFAULT_HONEYPOT_PORT],
         ['public-key'],
         ['private-key'],
+        ['log-file', 'l', None, 'Turn on Python logging to this file. It\' wise to disable Twisted logging.'],
+        ['log-level', None, 'warning', 'Possible options: error / warning / info / debug.'],
     ]
 
     @property
@@ -54,11 +57,21 @@ class Options(usage.Options):
     def private_key(self):
         return self['private-key']
 
+    @property
+    def log_file(self):
+        return self['log-file']
+
+    @property
+    def log_level(self):
+        return self['log-level']
+
     def postOptions(self):
         if not self['device-token']:
             raise usage.UsageError('Device token is required')
         self['public-key'] = read_key(self['public-key'], constants.DEFAULT_PUBLIC_KEY)
         self['private-key'] = read_key(self['private-key'], constants.DEFAULT_PRIVATE_KEY)
+        if self['log-file']:
+            init_python_logging(self['log-file'], self['log-level'])
 
     def getSynopsis(self):
         return super(Options, self).getSynopsis() + '\n' + haas_proxy_doc

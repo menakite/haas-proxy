@@ -4,7 +4,7 @@ SHELL=/bin/bash
 
 # Normally it would be just twistd but it runs always with Python 2 in this moment.
 TWISTD_CMD=-m haas_proxy
-TWISTD_RUN_ARGS=-l haas.log -n haas_proxy -d ${DEVICE_TOKEN}
+TWISTD_RUN_ARGS=-l - -n haas_proxy -d ${DEVICE_TOKEN}
 
 FPM_CMD=fpm -f -d sshpass -m 'haas@nic.cz' -s python
 FPM_CMD_PY2=${FPM_CMD} --python-bin /usr/bin/python2 --python-package-name-prefix python
