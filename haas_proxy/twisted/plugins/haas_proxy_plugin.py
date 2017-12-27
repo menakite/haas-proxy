@@ -15,7 +15,7 @@ def read_key(filename, default):
     if not filename:
         return default
     try:
-        return open(filename).read()
+        return open(filename, 'rb').read()
     except Exception as exc:
         raise usage.UsageError('Problem to read the key {}: {}'.format(filename, exc))
 

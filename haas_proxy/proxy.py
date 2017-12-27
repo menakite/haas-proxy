@@ -42,8 +42,10 @@ class ProxySSHFactory(factory.SSHFactory):
     """
 
     def __init__(self, cmd_args):
-        self.publicKeys = {b'ssh-rsa': keys.Key.fromString(data=cmd_args.public_key)}
-        self.privateKeys = {b'ssh-rsa': keys.Key.fromString(data=cmd_args.private_key)}
+        public_key = keys.Key.fromString(data=cmd_args.public_key)
+        private_key = keys.Key.fromString(data=cmd_args.private_key)
+        self.publicKeys = {public_key.sshType(): public_key}
+        self.privateKeys = {private_key.sshType(): private_key}
         self.services = {
             b'ssh-userauth': userauth.SSHUserAuthServer,
             b'ssh-connection': connection.SSHConnection,
