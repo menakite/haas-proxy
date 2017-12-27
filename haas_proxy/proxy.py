@@ -98,6 +98,10 @@ class ProxySSHUser(ConchUser):
         self.password = password
         self.channelLookup.update({b'session': session.SSHSession})
 
+    # pylint: disable=invalid-name
+    def getUserGroupID(self):
+        return None, None
+
 
 class ProxySSHSession(SSHSessionForUnixConchUser):
     """
