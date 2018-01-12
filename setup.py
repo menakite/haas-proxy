@@ -29,6 +29,8 @@ setup(
 
     install_requires=[
         'twisted[conch]>={}'.format(TWISTED_VERSION),
+        'requests',
+        'cachetools',
     ],
     extras_require={
         'test': EXTRA_TEST_REQUIRE,

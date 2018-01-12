@@ -15,6 +15,7 @@ from twisted.conch.unix import SSHSessionForUnixConchUser
 from twisted.internet import reactor, defer
 from twisted.python import components
 
+from haas_proxy.balancer import Balancer
 from haas_proxy.utils import force_text
 
 
@@ -29,7 +30,8 @@ class ProxyService(service.Service):
 
     def startService(self):
         # pylint: disable=no-member
-        self._port = reactor.listenTCP(self.args.port, ProxySSHFactory(self.args))
+        self._port = reactor.listenTCP(
+            self.args.port, ProxySSHFactory(self.args))
 
     def stopService(self):
         return self._port.stopListening()
@@ -50,9 +52,12 @@ class ProxySSHFactory(factory.SSHFactory):
             b'ssh-userauth': userauth.SSHUserAuthServer,
             b'ssh-connection': connection.SSHConnection,
         }
-        self.portal = cred.portal.Portal(ProxySSHRealm(), checkers=[ProxyPasswordChecker()])
+        self.portal = cred.portal.Portal(
+            ProxySSHRealm(), checkers=[ProxyPasswordChecker()])
         ProxySSHSession.cmd_args = cmd_args
-        components.registerAdapter(ProxySSHSession, ProxySSHUser, session.ISession)
+        ProxySSHSession.balancer = Balancer(cmd_args.balancer_address)
+        components.registerAdapter(
+            ProxySSHSession, ProxySSHUser, session.ISession)
 
 
 class ProxyPasswordChecker:
@@ -114,8 +119,8 @@ class ProxySSHSession(SSHSessionForUnixConchUser):
     Main function of SSH proxy - connects to honeypot and change password
     to JSON with more information needed to tag activity with user's account.
     """
-
-    cmd_args = None  # Will inject ProxySSHFactory.
+    balancer = None  # Injected from ProxySSHFactory.
+    cmd_args = None  # Injected from ProxySSHFactory.
 
     # pylint: disable=invalid-name
     def openShell(self, proto):
@@ -134,7 +139,8 @@ class ProxySSHSession(SSHSessionForUnixConchUser):
             usePTY=self.ptyTuple,
         )
         if self.ptyTuple:
-            fcntl.ioctl(self.pty.fileno(), tty.TIOCSWINSZ, struct.pack('4H', *self.winSize))
+            fcntl.ioctl(self.pty.fileno(), tty.TIOCSWINSZ,
+                        struct.pack('4H', *self.winSize))
         self.avatar.conn.transport.transport.setTcpNoDelay(1)
 
     @property
@@ -149,9 +155,11 @@ class ProxySSHSession(SSHSessionForUnixConchUser):
             'ssh',
             '-o', 'UserKnownHostsFile=/dev/null',
             '-o', 'StrictHostKeyChecking=no',
-            '-o', 'LogLevel=error',  # Ignore warning of permanently added host to list of known hosts.
-            '-p', str(self.cmd_args.honeypot_port),
-            '{}@{}'.format(force_text(self.avatar.username), self.cmd_args.honeypot_host),
+            # Ignore warning of permanently added host to list of known hosts.
+            '-o', 'LogLevel=error',
+            '-p', str(self.balancer.port),
+            '{}@{}'.format(force_text(self.avatar.username),
+                           self.balancer.host),
         ]
 
     @property
