@@ -133,7 +133,8 @@ class ProxySSHSession(SSHSessionForUnixConchUser):
             gid=None,
             usePTY=self.ptyTuple,
         )
-        fcntl.ioctl(self.pty.fileno(), tty.TIOCSWINSZ, struct.pack('4H', *self.winSize))
+        if self.ptyTuple:
+            fcntl.ioctl(self.pty.fileno(), tty.TIOCSWINSZ, struct.pack('4H', *self.winSize))
         self.avatar.conn.transport.transport.setTcpNoDelay(1)
 
     @property
