@@ -30,7 +30,8 @@ def avatar(request):
         username=request.param[0],
         password=request.param[1],
     )
-    avatar.conn.transport.transport.getPeer.return_value = mock.Mock(host='hacker', port=12345)
+    avatar.conn.transport.transport.getPeer.return_value = mock.Mock(
+        host='hacker', port=12345)
     return avatar
 
 
@@ -38,6 +39,7 @@ def avatar(request):
 def proxy_ssh_session(cmd_args, avatar):
     session = ProxySSHSession(avatar)
     session.cmd_args = cmd_args
+    session.balancer = mock.Mock(host="localhost", port=2222)
     return session
 
 

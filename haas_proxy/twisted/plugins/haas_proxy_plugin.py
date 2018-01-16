@@ -24,16 +24,13 @@ def read_key(filename, default):
 
 class Options(usage.Options):
     optParameters = [
-        ['device-token', 'd', None,
-            'Your ID at honeypot.labs.nic.cz. If you don\'t have one, sign up first.'],
+        ['device-token', 'd', None, 'Your ID at honeypot.labs.nic.cz. If you don\'t have one, sign up first.'],
         ['port', 'p', constants.DEFAULT_PORT, 'Port to listen to.', int],
         ['balancer-address', None, constants.DEFAULT_BALANCER_ADDRESS],
         ['public-key'],
         ['private-key'],
-        ['log-file', 'l', None,
-            'Turn on Python logging to this file. It\' wise to disable Twisted logging.'],
-        ['log-level', None, 'warning',
-            'Possible options: error / warning / info / debug.'],
+        ['log-file', 'l', None, 'Turn on Python logging to this file. It\' wise to disable Twisted logging.'],
+        ['log-level', None, 'warning', 'Possible options: error / warning / info / debug.'],
     ]
 
     @property

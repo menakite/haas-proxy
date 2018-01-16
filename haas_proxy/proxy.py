@@ -109,14 +109,20 @@ class ProxySSHUser(ConchUser):
     def getUserGroupId(self):
         """
         Returns tuple with user and group ID.
-        Method needed by `SSHSessionForUnixConchUser`.
+        Method needed by `SSHSessionForUnixConchUser.openShell`.
         """
         return 0, 0
 
     def getHomeDir(self):
+        """
+        Method needed by `SSHSessionForUnixConchUser.openShell`.
+        """
         return "/root"
 
     def getShell(self):
+        """
+        Method needed by `SSHSessionForUnixConchUser.openShell`.
+        """
         return "/bin/bash"
 
 
