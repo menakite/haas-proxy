@@ -18,15 +18,15 @@ def read_key(filename, default):
     try:
         return open(filename, 'rb').read()
     except Exception as exc:
-        raise usage.UsageError('Problem to read the key {}: {}'.format(filename, exc))
+        raise usage.UsageError(
+            'Problem reading the key {}: {}'.format(filename, exc))
 
 
 class Options(usage.Options):
     optParameters = [
         ['device-token', 'd', None, 'Your ID at honeypot.labs.nic.cz. If you don\'t have one, sign up first.'],
         ['port', 'p', constants.DEFAULT_PORT, 'Port to listen to.', int],
-        ['honeypot-host', None, constants.DEFAULT_HONEYPOT_HOST],
-        ['honeypot-port', None, constants.DEFAULT_HONEYPOT_PORT],
+        ['balancer-address', None, constants.DEFAULT_BALANCER_ADDRESS],
         ['public-key'],
         ['private-key'],
         ['log-file', 'l', None, 'Turn on Python logging to this file. It\' wise to disable Twisted logging.'],
@@ -42,12 +42,8 @@ class Options(usage.Options):
         return self['port']
 
     @property
-    def honeypot_host(self):
-        return self['honeypot-host']
-
-    @property
-    def honeypot_port(self):
-        return self['honeypot-port']
+    def balancer_address(self):
+        return self['balancer-address']
 
     @property
     def public_key(self):
@@ -68,8 +64,10 @@ class Options(usage.Options):
     def postOptions(self):
         if not self['device-token']:
             raise usage.UsageError('Device token is required')
-        self['public-key'] = read_key(self['public-key'], constants.DEFAULT_PUBLIC_KEY)
-        self['private-key'] = read_key(self['private-key'], constants.DEFAULT_PRIVATE_KEY)
+        self['public-key'] = read_key(self['public-key'],
+                                      constants.DEFAULT_PUBLIC_KEY)
+        self['private-key'] = read_key(self['private-key'],
+                                       constants.DEFAULT_PRIVATE_KEY)
         if self['log-file']:
             init_python_logging(self['log-file'], self['log-level'])
 
