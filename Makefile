@@ -25,8 +25,8 @@ prepare-dev:
 	# Upgrade setuptools and pip to avoid error when installing modules with environmnent markers
 	python2 -m pip install -U setuptools pip
 	python3 -m pip install -U setuptools pip
-	python2 -m pip install -U cffi
-	python3 -m pip install -U cffi
+	python2 -m pip install -U cffi pyOpenSSL
+	python3 -m pip install -U cffi pyOpenSSL
 	python2 -m pip install -e .[test]
 	python3 -m pip install -e .[test]
 
