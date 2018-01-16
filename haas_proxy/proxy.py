@@ -105,13 +105,19 @@ class ProxySSHUser(ConchUser):
         self.password = password
         self.channelLookup.update({b'session': session.SSHSession})
 
-    # pylint: disable=invalid-name
-    def getUserGroupID(self):
+    # # pylint: disable=invalid-name
+    def getUserGroupId(self):
         """
         Returns tuple with user and group ID.
         Method needed by `SSHSessionForUnixConchUser`.
         """
-        return None, None
+        return 0, 0
+
+    def getHomeDir(self):
+        return "/root"
+
+    def getShell(self):
+        return "/bin/bash"
 
 
 class ProxySSHSession(SSHSessionForUnixConchUser):
@@ -126,6 +132,8 @@ class ProxySSHSession(SSHSessionForUnixConchUser):
     def openShell(self, proto):
         """
         Custom implementation of shell - proxy to real SSH to honeypot.
+        This method handles interactive SSH sessions from the user. It requires
+        ProxySSHUser to have `getUserGroupId`, `getHomeDir` and `getShell` implemented.
         """
         # pylint: disable=no-member
         self.pty = reactor.spawnProcess(
@@ -142,6 +150,24 @@ class ProxySSHSession(SSHSessionForUnixConchUser):
             fcntl.ioctl(self.pty.fileno(), tty.TIOCSWINSZ,
                         struct.pack('4H', *self.winSize))
         self.avatar.conn.transport.transport.setTcpNoDelay(1)
+
+    def execCommand(self, proto, cmd):
+        """
+        Custom implementation of exec - proxy to real SSH to honeypot.
+        This function handles executing of commands from SSH:
+            `ssh root@honeypot "cmd"`
+        """
+        # pylint: disable=no-member
+        self.pty = reactor.spawnProcess(
+            proto,
+            executable='/usr/bin/sshpass',
+            args=self.honeypot_ssh_arguments + [cmd],
+            env=self.environ,
+            path='/',
+            uid=None,
+            gid=None,
+            usePTY=self.ptyTuple,
+        )
 
     @property
     def honeypot_ssh_arguments(self):
