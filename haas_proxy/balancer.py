@@ -28,9 +28,9 @@ class Balancer():
                 print("API returned invalid response: {}".format(resp.text))
                 return None
 
-            self.cache[self.CACHE_KEY] = resp.json()
+            self.cache[self.CACHE_KEY] = cached_resp = resp.json()
 
-        return self.cache.get(self.CACHE_KEY)
+        return cached_resp
 
     @property
     def host(self):
