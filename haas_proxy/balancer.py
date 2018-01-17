@@ -40,6 +40,7 @@ class Balancer():
 
             self.cache[self.CACHE_KEY] = cached_resp = resp.json()
 
+        print("Using haas server: {}".format(cached_resp))
         return cached_resp
 
     @property
