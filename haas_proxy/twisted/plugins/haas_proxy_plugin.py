@@ -3,9 +3,10 @@ Twisted plugin to be able tu run it directly with ``twistd`` command.
 """
 # pylint: disable=missing-docstring,invalid-name
 
-from twisted.python import usage
-from twisted.plugin import IPlugin
+import requests
 from twisted.application.service import IServiceMaker
+from twisted.plugin import IPlugin
+from twisted.python import usage
 from zope.interface import implementer
 
 from haas_proxy import ProxyService, constants, __doc__ as haas_proxy_doc
@@ -27,6 +28,7 @@ class Options(usage.Options):
         ['device-token', 'd', None, 'Your ID at honeypot.labs.nic.cz. If you don\'t have one, sign up first.'],
         ['port', 'p', constants.DEFAULT_PORT, 'Port to listen to.', int],
         ['balancer-address', None, constants.DEFAULT_BALANCER_ADDRESS],
+        ['validate-token-address', None, constants.DEFAULT_VALIDATE_TOKEN_ADDRESS],
         ['public-key'],
         ['private-key'],
         ['log-file', 'l', None, 'Turn on Python logging to this file. It\' wise to disable Twisted logging.'],
@@ -46,6 +48,10 @@ class Options(usage.Options):
         return self['balancer-address']
 
     @property
+    def validate_token_address(self):
+        return self['validate-token-address']
+
+    @property
     def public_key(self):
         return self['public-key']
 
@@ -62,17 +68,26 @@ class Options(usage.Options):
         return self['log-level']
 
     def postOptions(self):
-        if not self['device-token']:
-            raise usage.UsageError('Device token is required')
-        self['public-key'] = read_key(self['public-key'],
-                                      constants.DEFAULT_PUBLIC_KEY)
-        self['private-key'] = read_key(self['private-key'],
-                                       constants.DEFAULT_PRIVATE_KEY)
+        self.validate_token()
+        self['public-key'] = read_key(self['public-key'], constants.DEFAULT_PUBLIC_KEY)
+        self['private-key'] = read_key(self['private-key'], constants.DEFAULT_PRIVATE_KEY)
         if self['log-file']:
             init_python_logging(self['log-file'], self['log-level'])
 
     def getSynopsis(self):
         return super(Options, self).getSynopsis() + '\n' + haas_proxy_doc
+
+    def validate_token(self):
+        if not self['device-token']:
+            raise usage.UsageError('Device token is required')
+
+        token_is_valid = requests.post(
+            self['validate-token-address'],
+            data={'device-token': self['device-token']}
+        ).json()['valid']
+
+        if not token_is_valid:
+            raise usage.UsageError('Device token is not valid')
 
 
 @implementer(IServiceMaker, IPlugin)
