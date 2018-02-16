@@ -10,10 +10,13 @@ import tty
 from twisted import cred
 from twisted.application import service
 from twisted.conch.avatar import ConchUser
-from twisted.conch.ssh import factory, keys, userauth, connection, session
+from twisted.conch.ssh import common, factory, keys, session, userauth
+from twisted.conch.ssh.connection import MSG_CHANNEL_OPEN_FAILURE, OPEN_CONNECT_FAILED
+from twisted.conch.ssh.connection import SSHConnection as SSHConnectionTwisted
 from twisted.conch.unix import SSHSessionForUnixConchUser
-from twisted.internet import reactor, defer
-from twisted.python import components
+from twisted.internet import defer, reactor
+from twisted.python import components, log
+from twisted.python.compat import networkString
 
 from haas_proxy.balancer import Balancer
 from haas_proxy.utils import force_text
@@ -37,6 +40,23 @@ class ProxyService(service.Service):
         return self._port.stopListening()
 
 
+class SSHConnection(SSHConnectionTwisted):
+    def ssh_CHANNEL_OPEN(self, packet):
+        channelType, rest = common.getNS(packet)
+
+        if channelType != b'direct-tcpip':
+            return super().ssh_CHANNEL_OPEN(packet)
+
+        senderChannel, windowSize, maxPacket = struct.unpack('>3L', rest[:12])
+        log.err('channel open failed, direct-tcpip is not allowed')
+        reason = OPEN_CONNECT_FAILED
+        self.transport.sendPacket(
+            MSG_CHANNEL_OPEN_FAILURE,
+            struct.pack('>2L', senderChannel, reason) +
+            common.NS(networkString('unknown failure')) + common.NS(b'')
+        )
+
+
 # pylint: disable=abstract-method
 class ProxySSHFactory(factory.SSHFactory):
     """
@@ -50,7 +70,7 @@ class ProxySSHFactory(factory.SSHFactory):
         self.privateKeys = {private_key.sshType(): private_key}
         self.services = {
             b'ssh-userauth': userauth.SSHUserAuthServer,
-            b'ssh-connection': connection.SSHConnection,
+            b'ssh-connection': SSHConnection,
         }
         self.portal = cred.portal.Portal(
             ProxySSHRealm(), checkers=[ProxyPasswordChecker()])
