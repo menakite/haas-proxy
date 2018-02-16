@@ -41,13 +41,18 @@ class ProxyService(service.Service):
 
 
 class SSHConnection(SSHConnectionTwisted):
+    """
+    Overridden SSHConnection for disabling logs a traceback about a failed direct-tcpip connections
+    """
+    # pylint: disable=invalid-name,inconsistent-return-statements
     def ssh_CHANNEL_OPEN(self, packet):
-        channelType, rest = common.getNS(packet)
+        # pylint: disable=unbalanced-tuple-unpacking
+        channel_type, rest = common.getNS(packet)
 
-        if channelType != b'direct-tcpip':
+        if channel_type != b'direct-tcpip':
             return super().ssh_CHANNEL_OPEN(packet)
 
-        senderChannel, windowSize, maxPacket = struct.unpack('>3L', rest[:12])
+        senderChannel, _ = struct.unpack('>3L', rest[:12])
         log.err('channel open failed, direct-tcpip is not allowed')
         reason = OPEN_CONNECT_FAILED
         self.transport.sendPacket(
