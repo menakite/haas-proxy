@@ -50,7 +50,7 @@ class SSHConnection(SSHConnectionTwisted):
         channel_type, rest = common.getNS(packet)
 
         if channel_type != b'direct-tcpip':
-            return super().ssh_CHANNEL_OPEN(packet)
+            return SSHConnectionTwisted.ssh_CHANNEL_OPEN(self, packet)
 
         senderChannel, _ = struct.unpack('>3L', rest[:12])
         log.err('channel open failed, direct-tcpip is not allowed')
