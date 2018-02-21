@@ -40,7 +40,7 @@ setup(
     author='CZ.NIC Labs',
     author_email='haas@nic.cz',
     description='Honeypot proxy is tool for redirectiong SSH session from local computer to server of HaaS with additional information.',
-    license='GPLv2',
+    license='GPLv3',
 
     classifiers=[
         'Programming Language :: Python :: 2',
