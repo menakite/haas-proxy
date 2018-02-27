@@ -1,6 +1,5 @@
 FROM alpine:3.5
 
-WORKDIR proxy
 ADD . /proxy
 
 RUN apk add --no-cache \
@@ -14,7 +13,9 @@ RUN apk add --no-cache \
 	sshpass \
 	openssh
 RUN pip3 install --upgrade pip
-RUN python3 -m pip install -e .
+
+RUN python3 -m pip install /proxy
+RUN rm -rf /proxy
 
 EXPOSE 2222
 
