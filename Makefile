@@ -55,6 +55,10 @@ release: build
 upload:
 	python3 setup.py register sdist upload
 
+upload-docker: build-docker
+	docker tag haas-proxy cznic/haas-proxy
+	docker push cznic/haas-proxy
+
 build:
 	# Debian packages
 	${FPM_CMD_PY2} -t deb setup.py
@@ -66,6 +70,9 @@ build:
 
     # Just archive, no deps
 	python setup.py sdist --formats=gztar --dist-dir .
+
+build-docker:
+	docker build --no-cache -t haas-proxy .
 
 clean:
 	python setup.py clean

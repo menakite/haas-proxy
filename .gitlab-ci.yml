@@ -2,6 +2,9 @@
 
 image: debian:8
 
+variables:
+  DOCKER_DRIVER: overlay2
+
 before_script:
   - apt-get --quiet update
   - apt-get install -y make
@@ -32,3 +35,15 @@ build:
     - ./*.deb
     - ./*.rpm
     - ./*.tar
+
+build-docker:
+  image: docker:latest
+  services:
+    - docker:dind
+  stage: build
+  tags:
+    - dind
+  before_script:
+    - ''
+  script:
+    - docker build .
