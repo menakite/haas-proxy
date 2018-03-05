@@ -31,7 +31,6 @@ setup(
         'twisted[conch]>={}'.format(TWISTED_VERSION),
         'requests',
         'cachetools',
-        'shutilwhich;python_version<="2.7"',
     ],
     extras_require={
         'test': EXTRA_TEST_REQUIRE,
