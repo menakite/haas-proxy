@@ -1,10 +1,10 @@
 """
 Implementation of SSH proxy using Twisted.
 """
-try:
-    from shutil import which
-except ImportError:
-    from shutilwhich import which
+# try:
+#     from shutil import which
+# except ImportError:
+#     from shutilwhich import which
 
 import fcntl
 import json
@@ -23,7 +23,7 @@ from twisted.python import components, log
 from twisted.python.compat import networkString
 
 from haas_proxy.balancer import Balancer
-from haas_proxy.utils import force_text
+from haas_proxy.utils import force_text, which
 
 
 class ProxyService(service.Service):
