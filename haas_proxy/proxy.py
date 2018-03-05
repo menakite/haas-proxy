@@ -1,6 +1,10 @@
 """
 Implementation of SSH proxy using Twisted.
 """
+# try:
+#     from shutil import which
+# except ImportError:
+#     from shutilwhich import which
 
 import fcntl
 import json
@@ -19,7 +23,7 @@ from twisted.python import components, log
 from twisted.python.compat import networkString
 
 from haas_proxy.balancer import Balancer
-from haas_proxy.utils import force_text
+from haas_proxy.utils import force_text, which
 
 
 class ProxyService(service.Service):
@@ -44,6 +48,7 @@ class SSHConnection(SSHConnectionTwisted):
     """
     Overridden SSHConnection for disabling logs a traceback about a failed direct-tcpip connections
     """
+
     # pylint: disable=invalid-name,inconsistent-return-statements
     def ssh_CHANNEL_OPEN(self, packet):
         # pylint: disable=unbalanced-tuple-unpacking
@@ -169,7 +174,7 @@ class ProxySSHSession(SSHSessionForUnixConchUser):
         # pylint: disable=no-member
         self.pty = reactor.spawnProcess(
             proto,
-            executable='/usr/bin/sshpass',
+            executable=which('sshpass'),
             args=self.honeypot_ssh_arguments,
             env=self.environ,
             path='/',
@@ -191,7 +196,7 @@ class ProxySSHSession(SSHSessionForUnixConchUser):
         # pylint: disable=no-member
         self.pty = reactor.spawnProcess(
             proto,
-            executable='/usr/bin/sshpass',
+            executable=which('sshpass'),
             args=self.honeypot_ssh_arguments + [cmd],
             env=self.environ,
             path='/',
