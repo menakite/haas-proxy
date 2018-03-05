@@ -1,9 +1,9 @@
-import os
-import sys
-
 """
 Useful functions used by HaaS proxy.
 """
+
+import os
+import sys
 
 
 def force_text(value):
@@ -19,7 +19,8 @@ def force_text(value):
 
 
 # This function is copy-pasted from shutils. It using for compatibility with python 2.7 and 3.6 because shutils
-# hasn't which() function in python 2.7.
+# hasn't which() function in python 2.7. It will be removed when support python 2.7 ends.
+# pylint:disable=invalid-name,too-many-branches
 def which(cmd, mode=os.F_OK | os.X_OK, path=None):
     """Given a command, mode, and a PATH string, return the path which
     conforms to the given mode on the PATH, or None if there is no such
@@ -73,6 +74,7 @@ def which(cmd, mode=os.F_OK | os.X_OK, path=None):
         files = [cmd]
 
     seen = set()
+    # pylint:disable=redefined-builtin
     for dir in path:
         normdir = os.path.normcase(dir)
         if not normdir in seen:
