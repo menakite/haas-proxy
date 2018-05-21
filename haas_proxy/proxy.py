@@ -1,10 +1,6 @@
 """
 Implementation of SSH proxy using Twisted.
 """
-# try:
-#     from shutil import which
-# except ImportError:
-#     from shutilwhich import which
 
 import fcntl
 import json
