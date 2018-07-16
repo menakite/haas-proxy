@@ -90,6 +90,7 @@ class Options(usage.Options):
             raise usage.UsageError('Device token is not valid')
 
 
+# pylint: disable=useless-object-inheritance
 @implementer(IServiceMaker, IPlugin)
 class MyServiceMaker(object):
     tapname = 'haas_proxy'

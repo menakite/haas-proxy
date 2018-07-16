@@ -20,7 +20,7 @@ def force_text(value):
 
 # This function is copy-pasted from shutils. It using for compatibility with python 2.7 and 3.6 because shutils
 # hasn't which() function in python 2.7. It will be removed when support python 2.7 ends.
-# pylint:disable=invalid-name,too-many-branches
+# pylint:disable=invalid-name,too-many-branches,unneeded-not
 def which(cmd, mode=os.F_OK | os.X_OK, path=None):
     """Given a command, mode, and a PATH string, return the path which
     conforms to the given mode on the PATH, or None if there is no such

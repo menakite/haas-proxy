@@ -145,7 +145,7 @@ class ProxySSHUser(ConchUser):
         self.password = password
         self.channelLookup.update({b'session': session.SSHSession})
 
-    # # pylint: disable=invalid-name
+    # pylint: disable=invalid-name
     def getUserGroupId(self):
         """
         Returns tuple with user and group ID.
@@ -153,12 +153,14 @@ class ProxySSHUser(ConchUser):
         """
         return 0, 0
 
+    # pylint: disable=invalid-name
     def getHomeDir(self):
         """
         Method needed by `SSHSessionForUnixConchUser.openShell`.
         """
         return "/root"
 
+    # pylint: disable=invalid-name
     def getShell(self):
         """
         Method needed by `SSHSessionForUnixConchUser.openShell`.
