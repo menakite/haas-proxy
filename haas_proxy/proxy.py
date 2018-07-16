@@ -45,7 +45,7 @@ class SSHConnection(SSHConnectionTwisted):
     Overridden SSHConnection for disabling logs a traceback about a failed direct-tcpip connections
     """
 
-    # pylint: disable=invalid-name
+    # pylint: disable=invalid-name,inconsistent-return-statements
     def ssh_CHANNEL_OPEN(self, packet):
         # pylint: disable=unbalanced-tuple-unpacking
         channel_type, rest = common.getNS(packet)
@@ -66,7 +66,7 @@ class SSHConnection(SSHConnectionTwisted):
                 common.NS(networkString('unknown failure')) + common.NS(b'')
             )
 
-    # pylint: disable=invalid-name
+    # pylint: disable=invalid-name,inconsistent-return-statements
     def ssh_CHANNEL_DATA(self, packet):
         try:
             return SSHConnectionTwisted.ssh_CHANNEL_DATA(self, packet)
