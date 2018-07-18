@@ -1,4 +1,4 @@
-=== 1.8 (2018-07-16) ===
+=== 1.8 (2018-07-18) ===
 
 * Fix of KeyError in ssh_CHANNEL_DATA
 
