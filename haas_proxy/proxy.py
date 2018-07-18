@@ -53,14 +53,28 @@ class SSHConnection(SSHConnectionTwisted):
         if channel_type != b'direct-tcpip':
             return SSHConnectionTwisted.ssh_CHANNEL_OPEN(self, packet)
 
-        senderChannel, _ = struct.unpack('>3L', rest[:12])
         log.err('channel open failed, direct-tcpip is not allowed')
-        reason = OPEN_CONNECT_FAILED
-        self.transport.sendPacket(
-            MSG_CHANNEL_OPEN_FAILURE,
-            struct.pack('>2L', senderChannel, reason) +
-            common.NS(networkString('unknown failure')) + common.NS(b'')
-        )
+        try:
+            senderChannel, _ = struct.unpack('>3L', rest[:12])
+        except ValueError:
+            # Some bad packet, ignore it completely without responding.
+            pass
+        else:
+            self.transport.sendPacket(
+                MSG_CHANNEL_OPEN_FAILURE,
+                struct.pack('>2L', senderChannel, OPEN_CONNECT_FAILED) +
+                common.NS(networkString('unknown failure')) + common.NS(b'')
+            )
+
+    # pylint: disable=invalid-name,inconsistent-return-statements
+    def ssh_CHANNEL_DATA(self, packet):
+        try:
+            return SSHConnectionTwisted.ssh_CHANNEL_DATA(self, packet)
+        except KeyError:
+            # Some packets send data to the channel even it's not successfully opened.
+            # Very probably direct-tcpip types which has bad packet resulting in not
+            # responding in `ssh_CHANNEL_OPEN`. Ignore it as it's unimportant.
+            pass
 
 
 # pylint: disable=abstract-method
@@ -131,7 +145,7 @@ class ProxySSHUser(ConchUser):
         self.password = password
         self.channelLookup.update({b'session': session.SSHSession})
 
-    # # pylint: disable=invalid-name
+    # pylint: disable=invalid-name
     def getUserGroupId(self):
         """
         Returns tuple with user and group ID.
@@ -139,12 +153,14 @@ class ProxySSHUser(ConchUser):
         """
         return 0, 0
 
+    # pylint: disable=invalid-name
     def getHomeDir(self):
         """
         Method needed by `SSHSessionForUnixConchUser.openShell`.
         """
         return "/root"
 
+    # pylint: disable=invalid-name
     def getShell(self):
         """
         Method needed by `SSHSessionForUnixConchUser.openShell`.

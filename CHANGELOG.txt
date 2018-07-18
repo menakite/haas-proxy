@@ -1,3 +1,8 @@
+=== 1.8 (2018-07-16) ===
+
+* Fix of KeyError in ssh_CHANNEL_DATA
+
+
 === 1.7 (2018-05-21) ===
 
 * Fix of path to sshpass
