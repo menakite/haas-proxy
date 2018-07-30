@@ -23,4 +23,6 @@ def init_python_logging(filename, level):
             'warning': logging.WARNING,
             'debug': logging.DEBUG,
         }.get(level, logging.INFO),
+        format='%(asctime)s %(levelname)s %(name)s %(message)s',
+        datefmt='%Y-%m-%dT%H:%M:%S',
     )

@@ -21,7 +21,7 @@ if sys.version_info < (3, 0):
 
 setup(
     name='haas-proxy',
-    version='1.8',
+    version='1.9',
     packages=[
         'haas_proxy',
         'haas_proxy.twisted.plugins',
