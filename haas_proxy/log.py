@@ -7,7 +7,7 @@ import logging
 from twisted.python import log
 
 
-def init_python_logging(filename, level):
+def init_python_logging(filename=None, level=None):
     """
     Starts Twisted observer sending all log messages to Python
     logging system and makes basic configuration as file name
