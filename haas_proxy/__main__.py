@@ -13,10 +13,11 @@ from twisted.scripts.twistd import ServerOptions, runApp
 sys.path.append(os.path.dirname(os.path.realpath(__file__)))
 
 
-def wrapped_runApp(config):  # noqa
+def wrapped_run(config):
+    """ Runs twisted with default `--logger` arg overriden """
     if config.get("logger") is None:
         config["logger"] = STDLibLogObserver
     runApp(config)
 
 
-app.run(wrapped_runApp, ServerOptions)
+app.run(wrapped_run, ServerOptions)
