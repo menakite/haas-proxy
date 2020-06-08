@@ -1,6 +1,6 @@
-# Copyright (C) 2017 CZ.NIC, z.s.p.o. <https://www.nic.cz>
+# Copyright (C) 2017-2020 CZ.NIC, z.s.p.o. <https://www.nic.cz>
 
-image: debian:8
+image: debian:10
 
 variables:
   DOCKER_DRIVER: overlay2
