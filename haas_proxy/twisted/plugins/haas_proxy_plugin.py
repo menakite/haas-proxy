@@ -71,8 +71,7 @@ class Options(usage.Options):
         self.validate_token()
         self['public-key'] = read_key(self['public-key'], constants.DEFAULT_PUBLIC_KEY)
         self['private-key'] = read_key(self['private-key'], constants.DEFAULT_PRIVATE_KEY)
-        if self['log-file']:
-            init_python_logging(self['log-file'], self['log-level'])
+        init_python_logging(self['log-file'], self['log-level'])
 
     def getSynopsis(self):
         return super(Options, self).getSynopsis() + '\n' + haas_proxy_doc
