@@ -4,8 +4,6 @@ Log utilities.
 
 import logging
 
-from twisted.python import log
-
 
 def init_python_logging(filename=None, level=None):
     """
@@ -13,8 +11,6 @@ def init_python_logging(filename=None, level=None):
     logging system and makes basic configuration as file name
     and log level.
     """
-    observer = log.PythonLoggingObserver()
-    observer.start()
 
     logging.basicConfig(
         filename=filename,
