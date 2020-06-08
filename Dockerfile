@@ -5,6 +5,8 @@ ADD . /proxy
 RUN apk add --no-cache \
 	gcc \
 	musl-dev \
+	libffi-dev \
+	libressl-dev \
 	python3-dev \
 	py3-pip \
 	py3-cffi \
