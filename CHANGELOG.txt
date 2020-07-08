@@ -1,3 +1,7 @@
+=== 2.0.1 (2020-07-08) ===
+
+* Fix of KeyError in ssh_CHANNEL_CLOSE, ssh_CHANNEL_EOF
+
 === 2.0 (2020-06-17) ===
 
 * Remove python2 suport

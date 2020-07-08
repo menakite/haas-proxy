@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-import sys
 try:
     from setuptools import setup
 except ImportError:
@@ -13,7 +12,7 @@ EXTRA_TEST_REQUIRE = [
 
 setup(
     name='haas-proxy',
-    version='2.0',
+    version='2.0.1',
     packages=[
         'haas_proxy',
         'haas_proxy.twisted.plugins',
