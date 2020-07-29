@@ -40,41 +40,10 @@ class ProxyService(service.Service):
         return self._port.stopListening()
 
 
-class SilenceKeyErrorsMeta(type):
-    """
-    Meta class to silence KeyErrors from given set of methods,
-
-    Note that the methods will return None on failure
-    """
-
-    def __new__(cls, name, bases, dct):
-        wrapped_type = super().__new__(cls, name, bases, dct)
-        for method_name in wrapped_type.IGNORED_KEY_ERROR_METHODS:
-            # pylint: disable=invalid-name,inconsistent-return-statements
-            def silenced_method(*args, **kwargs):
-                try:
-                    # pylint: disable=cell-var-from-loop
-                    return getattr(SSHConnectionTwisted, method_name)(*args, **kwargs)
-                except KeyError:
-                    pass
-            setattr(wrapped_type, method_name, silenced_method)
-
-        return wrapped_type
-
-
-class SSHConnection(SSHConnectionTwisted, metaclass=SilenceKeyErrorsMeta):
+class SSHConnection(SSHConnectionTwisted):
     """
     Overridden SSHConnection for disabling logs a traceback about a failed direct-tcpip connections
     """
-
-    # Some packets send data to the channel even it's not successfully opened.
-    # Very probably direct-tcpip types which has bad packet resulting in not
-    # responding in `ssh_CHANNEL_OPEN`. Ignore it as it's unimportant.
-    IGNORED_KEY_ERROR_METHODS = (
-        "ssh_CHANNEL_DATA",
-        "ssh_CHANNEL_CLOSE",
-        "ssh_CHANNEL_EOF",
-    )
 
     # pylint: disable=invalid-name,inconsistent-return-statements
     def ssh_CHANNEL_OPEN(self, packet):
@@ -96,6 +65,16 @@ class SSHConnection(SSHConnectionTwisted, metaclass=SilenceKeyErrorsMeta):
                 struct.pack('>2L', senderChannel, OPEN_CONNECT_FAILED) +
                 common.NS(networkString('unknown failure')) + common.NS(b'')
             )
+
+    # pylint: disable=invalid-name,inconsistent-return-statements
+    def ssh_CHANNEL_DATA(self, packet):
+        try:
+            return SSHConnectionTwisted.ssh_CHANNEL_DATA(self, packet)
+        except KeyError:
+            # Some packets send data to the channel even it's not successfully opened.
+            # Very probably direct-tcpip types which has bad packet resulting in not
+            # responding in `ssh_CHANNEL_OPEN`. Ignore it as it's unimportant.
+            pass
 
 
 # pylint: disable=abstract-method
