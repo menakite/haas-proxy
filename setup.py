@@ -12,7 +12,7 @@ EXTRA_TEST_REQUIRE = [
 
 setup(
     name='haas-proxy',
-    version='2.0.1',
+    version='2.0.2',
     packages=[
         'haas_proxy',
         'haas_proxy.twisted.plugins',

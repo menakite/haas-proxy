@@ -1,3 +1,8 @@
+=== 2.0.2 (2020-07-29) ===
+
+* Don't Mask KeyError in ssh_CHANNEL_CLOSE, ssh_CHANNEL_EOF (it breaks the connection)
+* Raise an exeption when command is not found using which() (handle situation when sshpass cmd is not present)
+
 === 2.0.1 (2020-07-08) ===
 
 * Fix of KeyError in ssh_CHANNEL_CLOSE, ssh_CHANNEL_EOF
