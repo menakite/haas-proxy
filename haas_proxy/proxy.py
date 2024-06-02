@@ -16,9 +16,11 @@ from twisted.conch.ssh.connection import MSG_CHANNEL_OPEN_FAILURE, OPEN_CONNECT_
 from twisted.conch.ssh.connection import SSHConnection as SSHConnectionTwisted
 from twisted.conch.ssh.transport import SSHServerTransport as SSHServerTransportTwisted
 from twisted.conch.unix import SSHSessionForUnixConchUser
+import twisted.cred.checkers
 from twisted.internet import defer, reactor
 from twisted.python import components
 from twisted.python.compat import networkString
+from zope.interface import implementer
 
 from haas_proxy import constants, log
 from haas_proxy.balancer import Balancer
@@ -34,7 +36,7 @@ class ProxyService(service.Service):
         self.args = args
         self._port = None
 
-    def startService(self):
+    def startService(self):  # pylint: disable=invalid-name
         # pylint: disable=no-member
         self._port = reactor.listenTCP(
             self.args.port, ProxySSHFactory(self.args))
@@ -44,7 +46,7 @@ class ProxyService(service.Service):
         log.get_logger().info('Device token: %s', self.args.device_token)
         log.get_logger().info('Listening on port %d.', self.args.port)
 
-    def stopService(self):
+    def stopService(self):  # pylint: disable=invalid-name
         return self._port.stopListening()
 
 
@@ -143,6 +145,7 @@ class ProxySSHFactory(factory.SSHFactory):
         log.get_logger().info('Received SIGTERM -- exiting.')
 
 
+@implementer(twisted.cred.checkers.ICredentialsChecker)
 class ProxyPasswordChecker:
     """
     Simple object checking credentials. For this SSH proxy we allow only passwords
@@ -160,6 +163,7 @@ class ProxyPasswordChecker:
         return defer.succeed(credentials)
 
 
+@implementer(cred.portal.IRealm)
 class ProxySSHRealm:
     """
     Simple object to implement getting avatar used in :py:any:`portal.Portal`
@@ -218,6 +222,7 @@ class ProxySSHSession(SSHSessionForUnixConchUser):
     """
     balancer = None  # Injected from ProxySSHFactory.
     cmd_args = None  # Injected from ProxySSHFactory.
+    pty = None
 
     # pylint: disable=invalid-name
     def openShell(self, proto):
@@ -226,7 +231,6 @@ class ProxySSHSession(SSHSessionForUnixConchUser):
         This method handles interactive SSH sessions from the user. It requires
         ProxySSHUser to have `getUserGroupId`, `getHomeDir` and `getShell` implemented.
         """
-        # pylint: disable=no-member
         self.pty = reactor.spawnProcess(
             proto,
             executable=which('sshpass'),
@@ -248,7 +252,6 @@ class ProxySSHSession(SSHSessionForUnixConchUser):
         This function handles executing of commands from SSH:
             `ssh root@honeypot "cmd"`
         """
-        # pylint: disable=no-member
         self.pty = reactor.spawnProcess(
             proto,
             executable=which('sshpass'),
