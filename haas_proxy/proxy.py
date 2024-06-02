@@ -18,6 +18,7 @@ from twisted.conch.ssh.transport import SSHServerTransport as SSHServerTransport
 from twisted.conch.unix import SSHSessionForUnixConchUser
 import twisted.cred.checkers
 from twisted.internet import defer, reactor
+from twisted.internet.error import CannotListenError
 from twisted.python import components
 from twisted.python.compat import networkString
 from zope.interface import implementer
@@ -37,14 +38,18 @@ class ProxyService(service.Service):
         self._port = None
 
     def startService(self):  # pylint: disable=invalid-name
-        # pylint: disable=no-member
-        self._port = reactor.listenTCP(
-            self.args.port, ProxySSHFactory(self.args))
+        try:
+            self._port = reactor.listenTCP(
+                self.args.port, ProxySSHFactory(self.args), interface=self.args.listen_address)
+        except CannotListenError as cle:
+            log.get_logger().critical(cle)
+            reactor.stop()
 
         # Acknowledge our configuration
         log.get_logger().info('HaaS Proxy service successfully started.')
         log.get_logger().info('Device token: %s', self.args.device_token)
-        log.get_logger().info('Listening on port %d.', self.args.port)
+        log.get_logger().info('Listening on %s, port %d.',
+            self.args.listen_address if len(self.args.listen_address) > 0 else '0.0.0.0', self.args.port)
 
     def stopService(self):  # pylint: disable=invalid-name
         return self._port.stopListening()

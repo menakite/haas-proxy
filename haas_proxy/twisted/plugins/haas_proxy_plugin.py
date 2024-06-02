@@ -3,8 +3,11 @@ Twisted plugin to be able tu run it directly with ``twistd`` command.
 """
 # pylint: disable=missing-docstring,invalid-name
 
+from socket import AF_INET
+
 import requests
 from twisted.application.service import IServiceMaker
+from twisted.internet import abstract
 from twisted.plugin import IPlugin
 from twisted.python import usage
 from zope.interface import implementer
@@ -26,6 +29,7 @@ def read_key(filename, default):
 class Options(usage.Options):
     optParameters = [
         ['device-token', 'd', None, 'Your ID at haas.nic.cz. If you don\'t have one, sign up first and add a device.'],
+        ['listen-address', 'a', '', 'Local IP address to listen on.'],
         ['port', 'p', constants.DEFAULT_PORT, 'Port to listen to.', int],
         ['balancer-address', None, constants.DEFAULT_BALANCER_ADDRESS],
         ['validate-token-address', None, constants.DEFAULT_VALIDATE_TOKEN_ADDRESS],
@@ -39,6 +43,10 @@ class Options(usage.Options):
     @property
     def device_token(self):
         return self['device-token']
+
+    @property
+    def listen_address(self):
+        return self['listen-address']
 
     @property
     def port(self):
@@ -71,6 +79,7 @@ class Options(usage.Options):
     def postOptions(self):
         self.validate_log_level()
         init_python_logging(self['log-file'], self['log-level'])
+        self.validate_address()
         self.validate_token()
         self['public-key'] = read_key(self['public-key'], constants.DEFAULT_PUBLIC_KEY)
         self['private-key'] = read_key(self['private-key'], constants.DEFAULT_PRIVATE_KEY)
@@ -82,6 +91,14 @@ class Options(usage.Options):
         levels = self['log-level'].split(':')
         if len(levels) < 2 or len(levels[1].strip()) == 0:
             self['log-level'] = levels[0]
+
+    def validate_address(self):
+        # Check whether we got a valid IPv4 address
+        if not abstract.isIPAddress(self['listen-address'], AF_INET):
+            get_logger().warning('%s is not a valid IPv4 address, defaulting to 0.0.0.0',
+                self['listen-address'])
+            # Empty string means "all address" (0.0.0.0) for Twisted
+            self['listen-address'] = ''
 
     def validate_token(self):
         if not self['device-token']:
