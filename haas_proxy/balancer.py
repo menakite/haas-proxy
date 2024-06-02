@@ -1,4 +1,5 @@
 # pylint: disable=missing-docstring
+import socket
 import traceback
 
 import cachetools
@@ -37,6 +38,21 @@ class Balancer():
             if resp.status_code != 200:
                 log.get_logger().warning('API returned invalid response: %s', resp.text)
                 return None
+
+            # Try to connect as sometimes we get connection refused on this port...
+            # Instance a socket object here, so that it can be closed
+            # gracefully in case a connection succeeds inside the try block
+            sck = socket.socket()
+            address = tuple(resp.json().values())
+            try:
+                sck = socket.create_connection(address, timeout=2)
+            except:  # pylint: disable=bare-except
+                log.get_logger().warning('API returned invalid port. Unable to connect to %s', address)
+                return None
+            else:
+                log.get_logger().debug('Connected successfully to %s', address)
+            finally:
+                sck.close()
 
             self.cache[self.CACHE_KEY] = cached_resp = resp.json()
             log.get_logger().info('Using HaaS server: %s', cached_resp)
