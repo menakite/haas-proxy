@@ -17,9 +17,10 @@ from twisted.conch.ssh.connection import SSHConnection as SSHConnectionTwisted
 from twisted.conch.ssh.transport import SSHServerTransport as SSHServerTransportTwisted
 from twisted.conch.unix import SSHSessionForUnixConchUser
 from twisted.internet import defer, reactor
-from twisted.python import components, log
+from twisted.python import components
 from twisted.python.compat import networkString
 
+from haas_proxy import log
 from haas_proxy.balancer import Balancer
 from haas_proxy.utils import force_text, which
 
@@ -37,6 +38,11 @@ class ProxyService(service.Service):
         # pylint: disable=no-member
         self._port = reactor.listenTCP(
             self.args.port, ProxySSHFactory(self.args))
+
+        # Acknowledge our configuration
+        log.get_logger().info('HaaS Proxy service successfully started.')
+        log.get_logger().info('Device token: %s', self.args.device_token)
+        log.get_logger().info('Listening on port %d.', self.args.port)
 
     def stopService(self):
         return self._port.stopListening()
@@ -126,6 +132,11 @@ class ProxySSHFactory(factory.SSHFactory):
         ProxySSHSession.balancer = Balancer(cmd_args.balancer_address)
         components.registerAdapter(
             ProxySSHSession, ProxySSHUser, session.ISession)
+
+        reactor.addSystemEventTrigger('before', 'shutdown', self.shutdown_callback)
+
+    def shutdown_callback(self):
+        log.get_logger().info('Received SIGTERM -- exiting.')
 
 
 class ProxyPasswordChecker:

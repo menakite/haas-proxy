@@ -10,7 +10,7 @@ from twisted.python import usage
 from zope.interface import implementer
 
 from haas_proxy import ProxyService, constants, __doc__ as haas_proxy_doc
-from haas_proxy.log import init_python_logging
+from haas_proxy.log import init_python_logging, get_logger
 
 
 def read_key(filename, default):
@@ -25,13 +25,14 @@ def read_key(filename, default):
 
 class Options(usage.Options):
     optParameters = [
-        ['device-token', 'd', None, 'Your ID at honeypot.labs.nic.cz. If you don\'t have one, sign up first.'],
+        ['device-token', 'd', None, 'Your ID at haas.nic.cz. If you don\'t have one, sign up first and add a device.'],
         ['port', 'p', constants.DEFAULT_PORT, 'Port to listen to.', int],
         ['balancer-address', None, constants.DEFAULT_BALANCER_ADDRESS],
         ['validate-token-address', None, constants.DEFAULT_VALIDATE_TOKEN_ADDRESS],
         ['public-key'],
         ['private-key'],
-        ['log-file', 'l', None, 'Turn on Python logging to this file. It\' wise to disable Twisted logging.'],
+        ['log-file', 'l', 'syslog', 'Turn on Python logging to this file (default: syslog).'],
+        # Secret syntax for developers: <our log level>:<Twisted log level> (f.e. info:debug)
         ['log-level', None, 'warning', 'Possible options: error / warning / info / debug.'],
     ]
 
@@ -68,13 +69,19 @@ class Options(usage.Options):
         return self['log-level']
 
     def postOptions(self):
+        self.validate_log_level()
+        init_python_logging(self['log-file'], self['log-level'])
         self.validate_token()
         self['public-key'] = read_key(self['public-key'], constants.DEFAULT_PUBLIC_KEY)
         self['private-key'] = read_key(self['private-key'], constants.DEFAULT_PRIVATE_KEY)
-        init_python_logging(self['log-file'], self['log-level'])
 
     def getSynopsis(self):
         return super(Options, self).getSynopsis() + '\n' + haas_proxy_doc
+
+    def validate_log_level(self):
+        levels = self['log-level'].split(':')
+        if len(levels) < 2 or len(levels[1].strip()) == 0:
+            self['log-level'] = levels[0]
 
     def validate_token(self):
         if not self['device-token']:
@@ -87,6 +94,8 @@ class Options(usage.Options):
 
         if not token_is_valid:
             raise usage.UsageError('Device token is not valid')
+
+        get_logger().debug('Token %s validated successfully.', self['device-token'])
 
 
 # pylint: disable=useless-object-inheritance

@@ -4,7 +4,7 @@ import traceback
 import cachetools
 import requests
 
-from haas_proxy import constants
+from haas_proxy import constants, log
 
 
 class Balancer():
@@ -35,12 +35,12 @@ class Balancer():
                 return None
 
             if resp.status_code != 200:
-                print("API returned invalid response: {}".format(resp.text))
+                log.get_logger().warning('API returned invalid response: %s', resp.text)
                 return None
 
             self.cache[self.CACHE_KEY] = cached_resp = resp.json()
+            log.get_logger().info('Using HaaS server: %s', cached_resp)
 
-        print("Using haas server: {}".format(cached_resp))
         return cached_resp
 
     @property
