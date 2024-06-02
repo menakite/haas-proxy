@@ -9,6 +9,8 @@ DEFAULT_BALANCER_CHECK_INTERVAL = 3600
 DEFAULT_BALANCER_ADDRESS = 'https://haas.nic.cz/api/honeypot-loadbalancer'
 DEFAULT_VALIDATE_TOKEN_ADDRESS = 'https://haas.nic.cz/api/validate-token'
 
+DEFAULT_BANNER_STRING = b'SSH-2.0-OpenSSH_6.0p1 Debian-4+deb7u2'
+
 # pylint: disable=line-too-long
 DEFAULT_PUBLIC_KEY = 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAAAgQC2jdAE4EAAKikW6W/dDmWS/0lQ1jWM6c6Ef+KpGr+jW83/XIR2reWXeeDTIEluL20JV/P2+2bvVShNr4w8SWitcYKTpwkSgGYHo2vAQvXArx/CsRnTAP6NwrxuZoLNO52fMXQWSrqs0tEvkzYXR3PcR6Cq07RN7QkYNWctCYJxdw=='
 DEFAULT_PRIVATE_KEY = """-----BEGIN RSA PRIVATE KEY-----

@@ -20,7 +20,7 @@ from twisted.internet import defer, reactor
 from twisted.python import components
 from twisted.python.compat import networkString
 
-from haas_proxy import log
+from haas_proxy import constants, log
 from haas_proxy.balancer import Balancer
 from haas_proxy.utils import force_text, which
 
@@ -87,7 +87,11 @@ class SSHServerTransport(SSHServerTransportTwisted):
     """
     Overriden SSHServerTransport to avoid logging a RuntimeError during key exchange
     we actually don't care about.
+    We also set the version string ("SSH banner") to be the same as the HaaS server.
     """
+
+    # Use same version string as haas-app's server
+    ourVersionString = constants.DEFAULT_BANNER_STRING
 
     def sendKexInit(self):  # pylint: disable=invalid-name
         try:
