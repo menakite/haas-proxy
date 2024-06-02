@@ -25,6 +25,7 @@ from zope.interface import implementer
 
 from haas_proxy import constants, log
 from haas_proxy.balancer import Balancer
+from haas_proxy.connectionlimit import LimitConnectionsFactory
 from haas_proxy.utils import force_text, which
 
 
@@ -38,9 +39,15 @@ class ProxyService(service.Service):
         self._port = None
 
     def startService(self):  # pylint: disable=invalid-name
+        actual_factory = ProxySSHFactory(self.args)
+        if self.args.max_connections['global'] > 0 or self.args.max_connections['peer'] > 0:
+            actual_factory = LimitConnectionsFactory(actual_factory)
+            actual_factory.connection_limit_global = self.args.max_connections['global']
+            actual_factory.connection_limit_peer = self.args.max_connections['peer']
+
         try:
             self._port = reactor.listenTCP(
-                self.args.port, ProxySSHFactory(self.args), interface=self.args.listen_address)
+                self.args.port, actual_factory, interface=self.args.listen_address)
         except CannotListenError as cle:
             log.get_logger().critical(cle)
             reactor.stop()
@@ -50,6 +57,9 @@ class ProxyService(service.Service):
         log.get_logger().info('Device token: %s', self.args.device_token)
         log.get_logger().info('Listening on %s, port %d.',
             self.args.listen_address if len(self.args.listen_address) > 0 else '0.0.0.0', self.args.port)
+        if self.args.max_connections['peer'] > 0 or self.args.max_connections['global'] > 0:
+            log.get_logger().info('Connection limits: %d per peer, %d total.',
+                self.args.max_connections['peer'], self.args.max_connections['global'])
 
     def stopService(self):  # pylint: disable=invalid-name
         return self._port.stopListening()

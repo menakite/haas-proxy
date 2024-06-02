@@ -31,6 +31,8 @@ class Options(usage.Options):
         ['device-token', 'd', None, 'Your ID at haas.nic.cz. If you don\'t have one, sign up first and add a device.'],
         ['listen-address', 'a', '', 'Local IP address to listen on.'],
         ['port', 'p', constants.DEFAULT_PORT, 'Port to listen to.', int],
+        ['max-connections', None, '0:0',
+            'Limit maximum connections per peer and/or globally. Format: peer:global, 0 means unlimited.'],
         ['balancer-address', None, constants.DEFAULT_BALANCER_ADDRESS],
         ['validate-token-address', None, constants.DEFAULT_VALIDATE_TOKEN_ADDRESS],
         ['public-key'],
@@ -51,6 +53,10 @@ class Options(usage.Options):
     @property
     def port(self):
         return self['port']
+
+    @property
+    def max_connections(self):
+        return self['max-connections']
 
     @property
     def balancer_address(self):
@@ -80,6 +86,7 @@ class Options(usage.Options):
         self.validate_log_level()
         init_python_logging(self['log-file'], self['log-level'])
         self.validate_address()
+        self.validate_connections_limits()
         self.validate_token()
         self['public-key'] = read_key(self['public-key'], constants.DEFAULT_PUBLIC_KEY)
         self['private-key'] = read_key(self['private-key'], constants.DEFAULT_PRIVATE_KEY)
@@ -99,6 +106,18 @@ class Options(usage.Options):
                 self['listen-address'])
             # Empty string means "all address" (0.0.0.0) for Twisted
             self['listen-address'] = ''
+
+    def validate_connections_limits(self):
+        limits = self['max-connections'].split(':')
+        error = False
+        try:
+            self['max-connections'] = {'peer': int(limits[0]), 'global': int(limits[1])}
+        except ValueError:
+            error = True
+
+        if error or self['max-connections']['peer'] < 0 or self['max-connections']['global'] < 0:
+            get_logger().warning('Invalid values for --max-connections. Defaulting to non-limited.')
+            self['max-connections'] = {'peer': 0, 'global': 0}
 
     def validate_token(self):
         if not self['device-token']:
