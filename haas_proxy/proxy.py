@@ -10,9 +10,11 @@ import tty
 from twisted import cred
 from twisted.application import service
 from twisted.conch.avatar import ConchUser
+from twisted.conch.openssh_compat import primes
 from twisted.conch.ssh import common, factory, keys, session, userauth
 from twisted.conch.ssh.connection import MSG_CHANNEL_OPEN_FAILURE, OPEN_CONNECT_FAILED
 from twisted.conch.ssh.connection import SSHConnection as SSHConnectionTwisted
+from twisted.conch.ssh.transport import SSHServerTransport as SSHServerTransportTwisted
 from twisted.conch.unix import SSHSessionForUnixConchUser
 from twisted.internet import defer, reactor
 from twisted.python import components, log
@@ -53,7 +55,6 @@ class SSHConnection(SSHConnectionTwisted):
         if channel_type != b'direct-tcpip':
             return SSHConnectionTwisted.ssh_CHANNEL_OPEN(self, packet)
 
-        log.err('channel open failed, direct-tcpip is not allowed')
         try:
             senderChannel, _ = struct.unpack('>3L', rest[:12])
         except ValueError:
@@ -76,6 +77,22 @@ class SSHConnection(SSHConnectionTwisted):
             # responding in `ssh_CHANNEL_OPEN`. Ignore it as it's unimportant.
             pass
 
+class SSHServerTransport(SSHServerTransportTwisted):
+    """
+    Overriden SSHServerTransport to avoid logging a RuntimeError during key exchange
+    we actually don't care about.
+    """
+
+    def sendKexInit(self):  # pylint: disable=invalid-name
+        try:
+            SSHServerTransportTwisted.sendKexInit(self)
+        except RuntimeError:
+            pass
+
+    def receiveError(self, reasonCode, description):  # pylint: disable=invalid-name
+        # Parent just logs an error
+        pass
+
 
 # pylint: disable=abstract-method
 class ProxySSHFactory(factory.SSHFactory):
@@ -83,11 +100,22 @@ class ProxySSHFactory(factory.SSHFactory):
     Factory putting together all pieces of SSH proxy to honeypot together.
     """
 
+    # Make Twisted less verbose
+    noisy = False
+    protocol = SSHServerTransport
+
     def __init__(self, cmd_args):
         public_key = keys.Key.fromString(data=cmd_args.public_key)
         private_key = keys.Key.fromString(data=cmd_args.private_key)
-        self.publicKeys = {public_key.sshType(): public_key}
-        self.privateKeys = {private_key.sshType(): private_key}
+        self.publicKeys = {public_key.sshType(): public_key}  # pylint: disable=invalid-name
+        self.privateKeys = {private_key.sshType(): private_key}  # pylint: disable=invalid-name
+
+        # Try to read moduli file, doesn't actually matter if it doesn't succeed
+        try:
+            self.primes = primes.parseModuliFile('/etc/ssh/moduli')
+        except IOError:
+            pass
+
         self.services = {
             b'ssh-userauth': userauth.SSHUserAuthServer,
             b'ssh-connection': SSHConnection,
