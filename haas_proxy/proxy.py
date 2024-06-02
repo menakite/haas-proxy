@@ -100,6 +100,7 @@ class SSHConnection(SSHConnectionTwisted):
             # responding in `ssh_CHANNEL_OPEN`. Ignore it as it's unimportant.
             pass
 
+
 class SSHServerTransport(SSHServerTransportTwisted):
     """
     Overriden SSHServerTransport to avoid logging a RuntimeError during key exchange
@@ -120,8 +121,11 @@ class SSHServerTransport(SSHServerTransportTwisted):
         # Parent just logs an error
         pass
 
+    def connectionMade(self):  # pylint: disable=invalid-name
+        self.factory.update_connection_statistics()
+        SSHServerTransportTwisted.connectionMade(self)
 
-# pylint: disable=abstract-method
+
 class ProxySSHFactory(factory.SSHFactory):
     """
     Factory putting together all pieces of SSH proxy to honeypot together.
@@ -130,8 +134,13 @@ class ProxySSHFactory(factory.SSHFactory):
     # Make Twisted less verbose
     noisy = False
     protocol = SSHServerTransport
+    statistics = {}
 
     def __init__(self, cmd_args):
+        self.statistics = {
+            'connections': 0,
+            'proxied': 0
+        }
         public_key = keys.Key.fromString(data=cmd_args.public_key)
         private_key = keys.Key.fromString(data=cmd_args.private_key)
         self.publicKeys = {public_key.sshType(): public_key}  # pylint: disable=invalid-name
@@ -156,8 +165,17 @@ class ProxySSHFactory(factory.SSHFactory):
 
         reactor.addSystemEventTrigger('before', 'shutdown', self.shutdown_callback)
 
+    def update_connection_statistics(self):
+        self.statistics['connections'] += 1
+
+    def update_proxied_statistics(self):
+        self.statistics['proxied'] += 1
+
     def shutdown_callback(self):
         log.get_logger().info('Received SIGTERM -- exiting.')
+        log.get_logger().info(
+            'Got a total of %d unique connections. %d shell requests/exec commands were forwarded to the HaaS server.',
+            self.statistics['connections'], self.statistics['proxied'])
 
 
 @implementer(twisted.cred.checkers.ICredentialsChecker)
@@ -260,6 +278,7 @@ class ProxySSHSession(SSHSessionForUnixConchUser):
             fcntl.ioctl(self.pty.fileno(), tty.TIOCSWINSZ,
                         struct.pack('4H', *self.winSize))
         self.avatar.conn.transport.transport.setTcpNoDelay(1)
+        self.avatar.conn.transport.factory.update_proxied_statistics()
 
     def execCommand(self, proto, cmd):
         """
@@ -277,6 +296,7 @@ class ProxySSHSession(SSHSessionForUnixConchUser):
             gid=None,
             usePTY=self.ptyTuple,
         )
+        self.avatar.conn.transport.factory.update_proxied_statistics()
 
     @property
     def honeypot_ssh_arguments(self):
