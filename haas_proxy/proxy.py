@@ -19,6 +19,7 @@ from twisted.conch.unix import SSHSessionForUnixConchUser
 import twisted.cred.checkers
 from twisted.internet import defer, reactor
 from twisted.internet.error import CannotListenError
+from twisted.protocols.policies import TimeoutMixin
 from twisted.python import components
 from twisted.python.compat import networkString
 from zope.interface import implementer
@@ -101,7 +102,7 @@ class SSHConnection(SSHConnectionTwisted):
             pass
 
 
-class SSHServerTransport(SSHServerTransportTwisted):
+class SSHServerTransport(SSHServerTransportTwisted, TimeoutMixin):
     """
     Overriden SSHServerTransport to avoid logging a RuntimeError during key exchange
     we actually don't care about.
@@ -123,7 +124,12 @@ class SSHServerTransport(SSHServerTransportTwisted):
 
     def connectionMade(self):  # pylint: disable=invalid-name
         self.factory.update_connection_statistics()
+        self.setTimeout(constants.DEFAULT_SESSION_TIMEOUT)
         SSHServerTransportTwisted.connectionMade(self)
+
+    def dataReceived(self, data):  # pylint: disable=invalid-name
+        self.resetTimeout()
+        SSHServerTransportTwisted.dataReceived(self, data)
 
 
 class ProxySSHFactory(factory.SSHFactory):

@@ -5,9 +5,10 @@ Constants to use for default run of application.
 DEFAULT_PORT = 2222
 DEFAULT_HONEYPOT_HOST = 'haas-app.nic.cz'
 DEFAULT_HONEYPOT_PORT = 10000
-DEFAULT_BALANCER_CHECK_INTERVAL = 3600
+DEFAULT_BALANCER_CHECK_INTERVAL = 3600  # 1 hour
 DEFAULT_BALANCER_ADDRESS = 'https://haas.nic.cz/api/honeypot-loadbalancer'
 DEFAULT_VALIDATE_TOKEN_ADDRESS = 'https://haas.nic.cz/api/validate-token'
+DEFAULT_SESSION_TIMEOUT = 600  # 10 minutes
 
 DEFAULT_BANNER_STRING = b'SSH-2.0-OpenSSH_6.0p1 Debian-4+deb7u2'
 
