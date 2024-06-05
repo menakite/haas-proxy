@@ -127,6 +127,10 @@ class SSHServerTransport(SSHServerTransportTwisted, TimeoutMixin):
         self.setTimeout(constants.DEFAULT_SESSION_TIMEOUT)
         SSHServerTransportTwisted.connectionMade(self)
 
+    def connectionLost(self, reason):
+        self.setTimeout(None)
+        SSHServerTransportTwisted.connectionLost(self, reason)
+
     def dataReceived(self, data):  # pylint: disable=invalid-name
         self.resetTimeout()
         SSHServerTransportTwisted.dataReceived(self, data)

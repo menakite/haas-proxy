@@ -39,7 +39,7 @@ class Options(usage.Options):
         ['private-key'],
         ['log-file', 'l', 'syslog', 'Turn on Python logging to this file (default: syslog).'],
         # Secret syntax for developers: <our log level>:<Twisted log level> (f.e. info:debug)
-        ['log-level', None, 'warning', 'Possible options: error / warning / info / debug.'],
+        ['log-level', None, 'info', 'Possible options: error / warning / info / debug.'],
     ]
 
     @property
