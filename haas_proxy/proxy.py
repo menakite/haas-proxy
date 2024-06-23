@@ -9,6 +9,7 @@ import tty
 
 from twisted import cred
 from twisted.application import service
+from twisted.application.runner import _exit, _runner
 from twisted.conch.avatar import ConchUser
 from twisted.conch.openssh_compat import primes
 from twisted.conch.ssh import common, factory, keys, session, userauth
@@ -51,7 +52,7 @@ class ProxyService(service.Service):
                 self.args.port, actual_factory, interface=self.args.listen_address)
         except CannotListenError as cle:
             log.get_logger().critical(cle)
-            reactor.stop()
+            _exit.exit(_runner.ExitStatus.EX_CONFIG)
 
         # Acknowledge our configuration
         log.get_logger().info('HaaS Proxy service successfully started.')
@@ -63,7 +64,8 @@ class ProxyService(service.Service):
                 self.args.max_connections['peer'], self.args.max_connections['global'])
 
     def stopService(self):  # pylint: disable=invalid-name
-        return self._port.stopListening()
+        if self._port is not None:
+            return self._port.stopListening()
 
 
 class SSHConnection(SSHConnectionTwisted):
@@ -99,6 +101,14 @@ class SSHConnection(SSHConnectionTwisted):
             # Some packets send data to the channel even it's not successfully opened.
             # Very probably direct-tcpip types which has bad packet resulting in not
             # responding in `ssh_CHANNEL_OPEN`. Ignore it as it's unimportant.
+            pass
+
+    # pylint: disable=invalid-name,inconsistent-return-statements
+    def ssh_CHANNEL_WINDOW_ADJUST(self, packet):
+        try:
+            return SSHConnectionTwisted.ssh_CHANNEL_WINDOW_ADJUST(self, packet)
+        except KeyError:
+            # See description in ssh_CHANNEL_DATA
             pass
 
 

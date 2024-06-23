@@ -55,7 +55,7 @@ class Balancer():
                 sck.close()
 
             self.cache[self.CACHE_KEY] = cached_resp = resp.json()
-            log.get_logger().info('Using HaaS server: %s', cached_resp)
+            log.get_logger().debug('Using HaaS server: %s', cached_resp)
 
         return cached_resp
 
