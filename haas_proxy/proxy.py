@@ -4,6 +4,8 @@ Implementation of SSH proxy using Twisted.
 
 import fcntl
 import json
+import os
+import socket
 import struct
 import tty
 
@@ -18,7 +20,7 @@ from twisted.conch.ssh.connection import SSHConnection as SSHConnectionTwisted
 from twisted.conch.ssh.transport import SSHServerTransport as SSHServerTransportTwisted
 from twisted.conch.unix import SSHSessionForUnixConchUser
 import twisted.cred.checkers
-from twisted.internet import defer, reactor
+from twisted.internet import defer, reactor, task
 from twisted.internet.error import CannotListenError
 from twisted.protocols.policies import TimeoutMixin
 from twisted.python import components
@@ -30,6 +32,10 @@ from haas_proxy.balancer import Balancer
 from haas_proxy.connectionlimit import LimitConnectionsFactory
 from haas_proxy.utils import force_text, which
 
+# Un-import socket module needed for Systemd notifications if not started by Systemd
+if os.environ.get('NOTIFY_SOCKET') is None:
+    del socket
+
 
 class ProxyService(service.Service):
     """
@@ -40,8 +46,17 @@ class ProxyService(service.Service):
         self.args = args
         self._port = None
 
+        self._systemd_socket = os.environ.get('NOTIFY_SOCKET')
+        if self._systemd_socket is not None:
+            if not self._systemd_socket.startswith(('/', '@')):
+                # Unsupported socket type
+                self._systemd_socket = None
+            elif self._systemd_socket.startswith('@'):
+                # Abstract socket
+                self._systemd_socket = self._systemd_socket.replace('@', '\0', 1)
+
     def startService(self):  # pylint: disable=invalid-name
-        actual_factory = ProxySSHFactory(self.args)
+        actual_factory = ProxySSHFactory(self.args, self)
         if self.args.max_connections['global'] > 0 or self.args.max_connections['peer'] > 0:
             actual_factory = LimitConnectionsFactory(actual_factory)
             actual_factory.connection_limit_global = self.args.max_connections['global']
@@ -54,6 +69,7 @@ class ProxyService(service.Service):
             log.get_logger().critical(cle)
             _exit.exit(_runner.ExitStatus.EX_CONFIG)
 
+        self.notify_systemd_ready()
         # Acknowledge our configuration
         log.get_logger().info('HaaS Proxy service successfully started.')
         log.get_logger().info('Device token: %s', self.args.device_token)
@@ -66,6 +82,24 @@ class ProxyService(service.Service):
     def stopService(self):  # pylint: disable=invalid-name
         if self._port is not None:
             return self._port.stopListening()
+
+    def notify_systemd_ready(self):
+        self.notify_systemd('READY=1')
+        self.notify_systemd('STATUS=Accepting connections.')
+
+    def notify_systemd_stats(self, connections):
+        self.notify_systemd(f"STATUS=Accepting connections. Got {connections['connections']} connections, {connections['proxied']} commands/shells forwarded to HaaS server.")
+
+    def notify_systemd(self, env: str):
+        if self._systemd_socket is not None and len(env) > 0:
+            sck = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
+            try:
+                sck.sendto(env.encode('utf-8'), self._systemd_socket)
+            except Exception as exc:
+                log.get_logger().debug('Exception caught in notify_systemd(): %s (%s), ignoring.',
+                    type(exc).__name__, exc)
+            finally:
+                sck.close()
 
 
 class SSHConnection(SSHConnectionTwisted):
@@ -154,9 +188,11 @@ class ProxySSHFactory(factory.SSHFactory):
     # Make Twisted less verbose
     noisy = False
     protocol = SSHServerTransport
+    _service = None
     statistics = {}
 
-    def __init__(self, cmd_args):
+    def __init__(self, cmd_args, service):
+        self._service = service
         self.statistics = {
             'connections': 0,
             'proxied': 0
@@ -183,6 +219,9 @@ class ProxySSHFactory(factory.SSHFactory):
         components.registerAdapter(
             ProxySSHSession, ProxySSHUser, session.ISession)
 
+        self.systemd_stats_loopingcall = task.LoopingCall(self.update_systemd_stats)
+        if self._service._systemd_socket is not None:
+            self.systemd_stats_loopingcall.start(60)  # Once per minute
         reactor.addSystemEventTrigger('before', 'shutdown', self.shutdown_callback)
 
     def update_connection_statistics(self):
@@ -191,7 +230,12 @@ class ProxySSHFactory(factory.SSHFactory):
     def update_proxied_statistics(self):
         self.statistics['proxied'] += 1
 
+    def update_systemd_stats(self):
+        self._service.notify_systemd_stats(self.statistics)
+
     def shutdown_callback(self):
+        if self.systemd_stats_loopingcall.running:
+            self.systemd_stats_loopingcall.stop()
         log.get_logger().info('Received SIGTERM -- exiting.')
         log.get_logger().info(
             'Got a total of %d unique connections. %d shell requests/exec commands were forwarded to the HaaS server.',

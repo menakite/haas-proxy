@@ -1,0 +1,38 @@
+[Unit]
+Description=HaaS (Honeypot as a Service) Proxy
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+EnvironmentFile=/etc/default/haas-proxy
+Type=notify
+ExecStart=/usr/bin/python -m haas_proxy --nodaemon --pidfile= haas_proxy --device-token $DEVICE_TOKEN $HAAS_ARGS
+ProtectSystem=strict
+ProtectHome=yes
+ProtectProc=invisible
+ProcSubset=pid
+PrivateUsers=yes
+PrivateTmp=yes
+PrivateDevices=yes
+NoNewPrivileges=yes
+ProtectHostname=yes
+ProtectClock=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectKernelLogs=yes
+ProtectControlGroups=yes
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+RestrictNamespaces=yes
+LockPersonality=yes
+RestrictRealtime=yes
+RestrictSUIDSGID=yes
+MemoryDenyWriteExecute=yes
+SystemCallArchitectures=native
+Restart=on-failure
+RestartPreventExitStatus=CONFIG
+RestartSec=5
+TimeoutStopSec=5
+StartLimitBurst=3
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,3 @@
+# Default settings for haas-proxy.
+DEVICE_TOKEN=""
+HAAS_ARGS=""
