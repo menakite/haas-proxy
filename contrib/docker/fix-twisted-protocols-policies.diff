@@ -1,0 +1,22 @@
+diff --git a/src/twisted/protocols/policies.py b/src/twisted/protocols/policies.py
+index a89d4f8a8d1..c707f5fa235 100644
+--- a/src/twisted/protocols/policies.py
++++ b/src/twisted/protocols/policies.py
+@@ -365,7 +365,7 @@ def startFactory(self):
+         self.peerConnections = {}
+ 
+     def buildProtocol(self, addr):
+-        peerHost = addr[0]
++        peerHost = addr.host
+         connectionCount = self.peerConnections.get(peerHost, 0)
+         if connectionCount >= self.maxConnectionsPerPeer:
+             return None
+@@ -373,7 +373,7 @@ def buildProtocol(self, addr):
+         return WrappingFactory.buildProtocol(self, addr)
+ 
+     def unregisterProtocol(self, p):
+-        peerHost = p.getPeer()[1]
++        peerHost = p.getPeer().host
+         self.peerConnections[peerHost] -= 1
+         if self.peerConnections[peerHost] == 0:
+             del self.peerConnections[peerHost]

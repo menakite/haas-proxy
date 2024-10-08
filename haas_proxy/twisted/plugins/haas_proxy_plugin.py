@@ -3,6 +3,7 @@ Twisted plugin to be able tu run it directly with ``twistd`` command.
 """
 # pylint: disable=missing-docstring,invalid-name
 
+from pathlib import Path
 from socket import AF_INET
 
 import requests
@@ -29,7 +30,7 @@ def read_key(filename, default):
 class Options(usage.Options):
     optParameters = [
         ['device-token', 'd', None, 'Your ID at haas.nic.cz. If you don\'t have one, sign up first and add a device.'],
-        ['listen-address', 'a', '', 'Local IP address to listen on.'],
+        ['listen-address', 'a', '', 'Local IP address to listen on. Ignored if running in a Docker container.'],
         ['port', 'p', constants.DEFAULT_PORT, 'Port to listen to.', int],
         ['max-connections', None, '0:0',
             'Limit maximum connections per peer and/or globally. Format: peer:global, 0 means unlimited.'],
@@ -100,6 +101,10 @@ class Options(usage.Options):
             self['log-level'] = levels[0]
 
     def validate_address(self):
+        # To ensure that health checks work reliably, this option is ignored if running in a Docker container.
+        if Path('/.dockerenv').is_file():
+            self['listen-address'] = ''
+
         # Check whether we got a valid IPv4 address
         if len(self['listen-address']) > 0 and not abstract.isIPAddress(self['listen-address'], AF_INET):
             get_logger().warning('%s is not a valid IPv4 address, defaulting to 0.0.0.0',
@@ -125,7 +130,8 @@ class Options(usage.Options):
 
         token_is_valid = requests.post(
             self['validate-token-address'],
-            data={'device-token': self['device-token']}
+            data={'device-token': self['device-token']},
+            timeout=1.0
         ).json()['valid']
 
         if not token_is_valid:

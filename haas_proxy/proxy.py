@@ -167,7 +167,9 @@ class SSHServerTransport(SSHServerTransportTwisted, TimeoutMixin):
         pass
 
     def connectionMade(self):  # pylint: disable=invalid-name
-        self.factory.update_connection_statistics()
+        # Ignore connections from Docker health checker from localhost.
+        if self.getPeer().address.host != self.getHost().address.host:
+            self.factory.update_connection_statistics()
         self.setTimeout(constants.DEFAULT_SESSION_TIMEOUT)
         SSHServerTransportTwisted.connectionMade(self)
 

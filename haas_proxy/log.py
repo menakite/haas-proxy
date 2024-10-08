@@ -4,6 +4,8 @@ Log utilities.
 
 import logging
 from logging.handlers import SysLogHandler
+from pathlib import Path
+import sys
 
 
 LOGGER = None
@@ -32,8 +34,19 @@ def init_python_logging(filename=None, level=None):
 
     if filename == 'syslog':
         handler = SysLogHandler(address='/dev/log', facility=SysLogHandler.LOG_DAEMON)
+        log_format = '%(name)s: %(message)s'
+
+        # Check whether we're in a Docker container
+        if Path('/.dockerenv').is_file():
+            handler = logging.StreamHandler(stream=sys.stdout)
+            log_format = '%(levelname)s: %(message)s'
+            if sys.version_info.major == 3 and sys.version_info.minor >= 11:
+                level_names = logging.getLevelNamesMapping()
+                for name in level_names.keys():
+                    logging.addLevelName(level_names[name], name.lower())
+
         logging.basicConfig(
-            format='%(name)s: %(message)s',
+            format=log_format,
             handlers=(handler,))
     else:
         logging.basicConfig(

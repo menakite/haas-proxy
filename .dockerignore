@@ -17,6 +17,7 @@ README.md
 CHANGELOG.txt
 Makefile
 test_haas_proxy.py
+.git
 .gitignore
 .gitlab-ci.yml
 

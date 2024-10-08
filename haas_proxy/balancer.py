@@ -29,7 +29,7 @@ class Balancer():
         cached_resp = self.cache.get(self.CACHE_KEY)
         if cached_resp is None:
             try:
-                resp = requests.api.get(self.api_url)
+                resp = requests.api.get(self.api_url, timeout=1.0)
             # pylint: disable=broad-except
             except Exception:
                 traceback.print_exc()
