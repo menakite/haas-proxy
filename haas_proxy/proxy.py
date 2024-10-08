@@ -13,6 +13,7 @@ from twisted import cred
 from twisted.application import service
 from twisted.application.runner import _exit, _runner
 from twisted.conch.avatar import ConchUser
+from twisted.conch.error import ConchError
 from twisted.conch.openssh_compat import primes
 from twisted.conch.ssh import common, factory, keys, session, userauth
 from twisted.conch.ssh.connection import MSG_CHANNEL_OPEN_FAILURE, OPEN_CONNECT_FAILED
@@ -179,7 +180,13 @@ class SSHServerTransport(SSHServerTransportTwisted, TimeoutMixin):
 
     def dataReceived(self, data):  # pylint: disable=invalid-name
         self.resetTimeout()
-        SSHServerTransportTwisted.dataReceived(self, data)
+        try:
+            SSHServerTransportTwisted.dataReceived(self, data)
+        except ConchError as exc:
+            if len(exc.args) > 0 and exc.args[0].startswith('Unsupported key exchange algorithm: '):
+                pass
+            else:
+                raise
 
 
 class ProxySSHFactory(factory.SSHFactory):
