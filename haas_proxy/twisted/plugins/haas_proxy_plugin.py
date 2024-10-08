@@ -101,7 +101,7 @@ class Options(usage.Options):
 
     def validate_address(self):
         # Check whether we got a valid IPv4 address
-        if not abstract.isIPAddress(self['listen-address'], AF_INET):
+        if len(self['listen-address']) > 0 and not abstract.isIPAddress(self['listen-address'], AF_INET):
             get_logger().warning('%s is not a valid IPv4 address, defaulting to 0.0.0.0',
                 self['listen-address'])
             # Empty string means "all address" (0.0.0.0) for Twisted
